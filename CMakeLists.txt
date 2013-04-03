@@ -9,14 +9,14 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 find_package(PkgConfig)
 
-# opencv
+# OpenCV
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 link_libraries(${OpenCV_LIBRARIES})
 
 #pcl
-find_package(PCL REQUIRED COMPONENTS common io)
+find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
