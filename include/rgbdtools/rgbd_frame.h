@@ -70,7 +70,6 @@ class RGBDFrame
     cv::Mat depth_img;       ///< Depth image in mm (16UC1). 0 = invalid data
     cv::Mat intr;
 
-
     /** @brief The intrinsic matrix which applies to both images. 
      * 
      * It's assumed that the images are already

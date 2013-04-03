@@ -267,6 +267,8 @@ void RGBDFrame::constructFeaturePointCloud(
 
   // create point cloud
   pointCloudFromMeans(means_f, cloud);
+  
+  //set the header
   cloud.header.frame_id   = header.frame_id;
   cloud.header.seq        = header.seq;
   cloud.header.stamp.sec  = header.stamp.sec;

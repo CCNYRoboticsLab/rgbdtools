@@ -19,29 +19,17 @@ find_package(PCL REQUIRED COMPONENTS common io)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-add_library (rgbd_features
+add_library (rgbdtools
+  src/rgbd_frame.cpp
+  src/rgbd_keyframe.cpp
+  src/rgbd_util.cpp
   src/features/feature_detector.cpp
   src/features/orb_detector.cpp
   src/features/surf_detector.cpp
   src/features/gft_detector.cpp
-  src/features/star_detector.cpp)
-
-target_link_libraries (rgbd_features
-  ${OPENCV_LIBRARIES})
-
-add_library (rgbd_registration
+  src/features/star_detector.cpp
   src/registration/motion_estimation.cpp
   src/registration/motion_estimation_icp_prob_model.cpp)
-  
-target_link_libraries (rgbd_registration
-  boost_signals 
-  boost_system
-  ${PCL_LIBRARIES})
-
-add_library (rgbdtools
-  src/rgbd_frame.cpp
-  src/rgbd_keyframe.cpp
-  src/rgbd_util.cpp)
 
 target_link_libraries (rgbdtools
   boost_signals 
