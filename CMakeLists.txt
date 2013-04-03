@@ -10,9 +10,10 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 find_package(PkgConfig)
 
 # opencv
-find_package(OpenCV REQUIRED)
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_directories(${OPENCV_LIBRARY_DIRS})
+FIND_PACKAGE( OpenCV REQUIRED )
+include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
+link_libraries(${OpenCV_LIBRARIES})
 
 #pcl
 find_package(PCL REQUIRED COMPONENTS common io)
@@ -35,7 +36,7 @@ target_link_libraries (rgbdtools
   boost_signals 
   boost_system
   boost_filesystem
-  ${OPENCV_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES})
   
 install(TARGETS rgbdtools DESTINATION lib)
