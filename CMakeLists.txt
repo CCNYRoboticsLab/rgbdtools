@@ -54,5 +54,5 @@ target_link_libraries (rgbdtools
   ${OPENCV_LIBRARIES}
   ${PCL_LIBRARIES})
   
-install(TARGETS rgbdtools DESTINATION $(LIBRARY_OUTPUT_PATH))
+install(TARGETS rgbdtools DESTINATION lib)
 install(DIRECTORY include/rgbdtools DESTINATION include)
