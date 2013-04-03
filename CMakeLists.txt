@@ -19,7 +19,7 @@ find_package(PCL REQUIRED COMPONENTS common io)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-add_library (rgbdtools
+add_library (rgbdtools SHARED
   src/rgbd_frame.cpp
   src/rgbd_keyframe.cpp
   src/rgbd_util.cpp
@@ -35,8 +35,6 @@ target_link_libraries (rgbdtools
   boost_signals 
   boost_system
   boost_filesystem
-  rgbd_features
-  rgbd_registration
   ${OPENCV_LIBRARIES}
   ${PCL_LIBRARIES})
   
