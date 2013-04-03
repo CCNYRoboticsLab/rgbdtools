@@ -37,7 +37,7 @@
 #include "rgbdtools/features/star_detector.h"
 #include "rgbdtools/features/surf_detector.h"
 
-#include "rgbdtools/registration/motion_etimation.h"
-#include "rgbdtools/registration/motion_icp_prob_model.h"
+#include "rgbdtools/registration/motion_estimation.h"
+#include "rgbdtools/registration/motion_estimation_icp_prob_model.h"
 
 #endif // RGBDTOOLS_RGBDTOOLS_H
