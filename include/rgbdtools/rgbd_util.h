@@ -62,6 +62,26 @@ void removeInvalidDistributions(
   Vector3fVector& means_f,
   Matrix3fVector& covariances_f);
 
+/** @brief Transforms a vector of means
+ * 
+ * @param means vector of 3x1 matrices of positions (3D means)
+ * @param transform the tranformation to be applied to all the means
+ */
+void transformMeans(
+  Vector3fVector& means,
+  const AffineTransform& transform);
+
+/** @brief Transforms a vector of means and covariances
+ * 
+ * @param means vector of 3x1 matrices of positions (3D means)
+ * @param covariances vector of 3x3 covariance matrices
+ * @param transform the transformation to be applied to all the means and covariances
+ */
+void transformDistributions(
+  Vector3fVector& means,
+  Matrix3fVector& covariances,
+  const AffineTransform& transform);
+
 /** @brief Creates a pcl point cloud form a vector
  * of eigen matrix means
  * 
@@ -149,11 +169,6 @@ void XYZRPYToEigenAffine(
   float x, float y, float z, 
   float roll, float pitch, float yaw, 
   AffineTransform& ttransform);
-
-void transformDistributions(
-  Vector3fVector& means,
-  Matrix3fVector& covariances,
-  const AffineTransform& transform);
 
 void getTfDifference(
   const AffineTransform& transform, 

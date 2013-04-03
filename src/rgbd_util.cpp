@@ -325,6 +325,21 @@ void XYZRPYToEigenAffine(
   t(3,0) = 0;    t(3,1) = 0;           t(3,2) = 0;           t(3,3) = 1;
 }
   
+void transformMeans(
+  Vector3fVector& means,
+  const AffineTransform& transform)
+{
+  Matrix3f R = transform.rotation();
+  Vector3f t = transform.translation();
+  
+  unsigned int size = means.size(); 
+  for(unsigned int i = 0; i < size; ++i)
+  {
+    Vector3f& m = means[i];
+    m = R * m + t;
+  }  
+}
+  
 void transformDistributions(
   Vector3fVector& means,
   Matrix3fVector& covariances,

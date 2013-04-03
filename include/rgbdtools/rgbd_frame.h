@@ -55,15 +55,11 @@ class RGBDFrame
     RGBDFrame();
 
     /** @brief Constructor from ROS messages
-     * @param rgb_msg 8UC3 ROS image message
-     * @param depth_msg 16UC1 ROS depth message (in mm, 0 = invalid data)
+     * @param rgb_img_in 8UC3 image message
+     * @param depth_img_in 16UC1 ROS depth message (in mm, 0 = invalid data)
      * @param info_msg ROS camera info message, assumed no distortion, applies to both images
      */
-     /*
-    RGBDFrame(const ImageMsg::ConstPtr& rgb_msg,
-              const ImageMsg::ConstPtr& depth_msg,
-              const CameraInfoMsg::ConstPtr& info_msg);*/
-              
+             
     RGBDFrame(const cv::Mat& rgb_img_in,
               const cv::Mat& depth_img_in,
               const cv::Mat& intr_in,
