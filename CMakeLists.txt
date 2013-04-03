@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.4.6)
 
+project(rgbdtools)
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
@@ -16,10 +18,6 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 find_package(PCL REQUIRED COMPONENTS common io)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
-
-#add_definitions(${PCL_DEFINITIONS})
-#add_executable(pcd_write_test pcd_write.cpp)
-#target_link_libraries(pcd_write_test ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES})
 
 add_library (rgbd_features
   src/features/feature_detector.cpp
