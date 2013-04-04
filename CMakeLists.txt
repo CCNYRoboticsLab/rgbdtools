@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.8)
 
 project(rgbdtools)
 
@@ -15,10 +15,15 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 link_libraries(${OpenCV_LIBRARIES})
 
-#pcl
+# PCL
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
+
+# Boost
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+link_libraries(${Boost_LIBRARIES})    
 
 add_library (rgbdtools SHARED
   src/rgbd_frame.cpp
@@ -33,9 +38,7 @@ add_library (rgbdtools SHARED
   src/registration/motion_estimation_icp_prob_model.cpp)
 
 target_link_libraries (rgbdtools
-  boost_signals 
-  boost_system
-  boost_filesystem
+  ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES})
   
