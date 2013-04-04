@@ -76,7 +76,7 @@ class MotionEstimationICPProbModel: public MotionEstimation
     Vector3fVector* getMeans()  { return &means_; }
     Matrix3fVector* getCovariances()  { return &covariances_; }
         
-    void setMatIterations(int max_iterations);
+    void setMaxIterations(int max_iterations);
     void setMinCorrespondences(int min_correspondences);
     void setNNearestNeighbors(int n_nearest_neighbors);
     void setMaxModelSize(int max_model_size);

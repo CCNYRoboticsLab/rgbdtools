@@ -89,7 +89,7 @@ void MotionEstimation::setBaseToCameraTf(const AffineTransform& b2c)
   b2c_ = b2c;
 }
 
-void MotionEstimation::setMotionContstraint(int motion_constraint)
+void MotionEstimation::setMotionConstraint(int motion_constraint)
 {
   motion_constraint_ = motion_constraint;
 }

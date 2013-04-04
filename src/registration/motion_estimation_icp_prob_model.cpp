@@ -384,7 +384,7 @@ bool MotionEstimationICPProbModel::saveModel(const std::string& filename)
   return (result_pcd == 0); 
 }
 
-void MotionEstimationICPProbModel::setMatIterations(int max_iterations)
+void MotionEstimationICPProbModel::setMaxIterations(int max_iterations)
 {
   max_iterations_ = max_iterations;
 }

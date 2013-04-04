@@ -70,7 +70,7 @@ class MotionEstimation
      */    
     void setBaseToCameraTf(const AffineTransform& b2c);
 
-    void setMotionContstraint(int motion_constraint); 
+    void setMotionConstraint(int motion_constraint); 
 
     /** @brief Return the size of the internal model. Overriden for classes
      * that use a model.
