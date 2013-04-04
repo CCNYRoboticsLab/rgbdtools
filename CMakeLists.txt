@@ -28,6 +28,9 @@ find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})    
 
+message("Boost: ${Boost_LIBRARIES}")
+message("OpenCV: ${OpenCV_LIBRARIES}")
+
 add_library (rgbdtools SHARED
   src/rgbd_frame.cpp
   src/rgbd_keyframe.cpp
