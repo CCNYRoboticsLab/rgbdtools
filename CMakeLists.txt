@@ -31,8 +31,9 @@ link_libraries(${Boost_LIBRARIES})
 message("Boost: ${Boost_LIBRARIES}")
 message("OpenCV: ${OpenCV_LIBRARIES}")
 
-# g2o
-# we have our own find script for g2o
+# g2o:
+#   use script to find g2o
+#   if not installed, set G2O_INCLUDE_DIRS manually using -DG2O_INCLUDE_DIRS
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 find_package(G2O)

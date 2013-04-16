@@ -25,10 +25,8 @@
 
 namespace rgbdtools {
 
-KeyframeGraphSolverG2O::KeyframeGraphSolverG2O(
-  const ros::NodeHandle& nh,
-  const ros::NodeHandle& nh_private):
-  KeyframeGraphSolver(nh, nh_private),
+KeyframeGraphSolverG2O::KeyframeGraphSolverG2O():
+  KeyframeGraphSolver(),
   vertexIdx(0)
 {
   optimizer.setMethod(g2o::SparseOptimizer::LevenbergMarquardt);
@@ -80,7 +78,7 @@ void KeyframeGraphSolverG2O::solve(
       inf = inf * matches;
     }
     
-    addEdge(from_idx, to_idx, eigenFromTf(association.a2b), inf);
+    addEdge(from_idx, to_idx, association.a2b, inf);
   }
   
   // run the optimization
