@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-include(ExternalProject)
-
 project(rgbdtools)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -34,12 +32,17 @@ message("Boost: ${Boost_LIBRARIES}")
 message("OpenCV: ${OpenCV_LIBRARIES}")
 
 # g2o
-#set(g2o_REPOSITORY https://github.com/RainerKuemmerle/g2o.git)
+# we have our own find script for g2o
 
-#ExternalProject_Add(
-#  g2o
-#  GIT_REPOSITORY ${g2o_REPOSITORY}
-#  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
+find_package(G2O)
+
+if (G2O_FOUND)
+  include_directories(${G2O_INCLUDE_DIRS})
+  link_libraries(${G2O_LIBRARIES})    
+endif()
+
+message("G2O: ${G2O_INCLUDE_DIRS}")
 
 # build rgbdtools library
 
