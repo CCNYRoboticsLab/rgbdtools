@@ -38,9 +38,11 @@ message("OpenCV: ${OpenCV_LIBRARIES}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 find_package(G2O)
 include_directories(${G2O_INCLUDE_DIRS})
+link_directories(${G2O_LIBRARY_DIRS})
 link_libraries(${G2O_LIBRARIES})    
 
-message("G2O inc: ${G2O_INCLUDE_DIRS}")
+message("G2O inc. dirs: ${G2O_INCLUDE_DIRS}")
+message("G2O lib. dirs: ${G2O_LIBRARY_DIRS}")
 message("G2O libs: ${G2O_LIBRARIES}")
 
 # build rgbdtools library
