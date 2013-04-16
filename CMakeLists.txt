@@ -36,11 +36,8 @@ message("OpenCV: ${OpenCV_LIBRARIES}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 find_package(G2O)
-
-if (G2O_FOUND)
-  include_directories(${G2O_INCLUDE_DIRS})
-  link_libraries(${G2O_LIBRARIES})    
-endif()
+include_directories(${G2O_INCLUDE_DIRS})
+link_libraries(${G2O_LIBRARIES})    
 
 message("G2O: ${G2O_INCLUDE_DIRS}")
 
