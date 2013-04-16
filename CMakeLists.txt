@@ -40,7 +40,8 @@ find_package(G2O)
 include_directories(${G2O_INCLUDE_DIRS})
 link_libraries(${G2O_LIBRARIES})    
 
-message("G2O: ${G2O_INCLUDE_DIRS}")
+message("G2O inc: ${G2O_INCLUDE_DIRS}")
+message("G2O libs: ${G2O_LIBRARIES}")
 
 # build rgbdtools library
 
