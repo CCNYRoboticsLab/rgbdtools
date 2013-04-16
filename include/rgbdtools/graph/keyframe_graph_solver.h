@@ -39,7 +39,7 @@ class KeyframeGraphSolver
 {
   public:
 
-    /** @brief Constructor from ROS noehandles
+    /** @brief Constructor
      */  
     KeyframeGraphSolver();
     
