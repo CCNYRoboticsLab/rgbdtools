@@ -31,14 +31,15 @@ KeyframeGraphDetector::KeyframeGraphDetector()
 
   // params
   max_ransac_iterations_ = 2000;
-  save_ransac_results_ = false;
-  ransac_results_path_ = std::getenv("HOME");
   n_ransac_candidates_ = 15;
   k_nearest_neighbors_ = 15;
   min_ransac_inliers_ = 30;
   max_corresp_dist_desc_ = 1.0;
   max_corresp_dist_eucl_ = 0.03;
   n_keypoints_ = 200;
+
+  save_ransac_results_ = false;
+  ransac_results_path_ = std::getenv("HOME");
     
   // derived params
   max_corresp_dist_eucl_sq_ = max_corresp_dist_eucl_ * max_corresp_dist_eucl_;
@@ -47,6 +48,42 @@ KeyframeGraphDetector::KeyframeGraphDetector()
 KeyframeGraphDetector::~KeyframeGraphDetector()
 {
 
+}
+
+void KeyframeGraphDetector::setMaxRansacIterations(int max_ransac_iterations)
+{
+  max_ransac_iterations_ = max_ransac_iterations;
+}
+
+void KeyframeGraphDetector::setNRansacCandidates(int n_ransac_candidates)
+{
+  n_ransac_candidates_ = n_ransac_candidates;
+}
+
+void KeyframeGraphDetector::setKNearestNeighbors(int k_nearest_neighbors)
+{
+  k_nearest_neighbors_ = k_nearest_neighbors;
+}
+
+void KeyframeGraphDetector::setMinRansacInliers(int min_ransac_inliers)
+{
+  min_ransac_inliers_ = min_ransac_inliers;
+}
+
+void KeyframeGraphDetector::setMaxCorrespDistEucl(double max_corresp_dist_eucl)
+{
+  max_corresp_dist_eucl_ = max_corresp_dist_eucl;
+  max_corresp_dist_eucl_sq_ = max_corresp_dist_eucl_ * max_corresp_dist_eucl_;
+}
+
+void KeyframeGraphDetector::setMaxCorrespDistDesc(double max_corresp_dist_desc)
+{
+  max_corresp_dist_desc_ = max_corresp_dist_desc;
+}
+
+void KeyframeGraphDetector::setNKeypoints(int n_keypoints)
+{
+  n_keypoints_ = n_keypoints;
 }
 
 void KeyframeGraphDetector::generateKeyframeAssociations(

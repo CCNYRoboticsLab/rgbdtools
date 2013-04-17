@@ -59,6 +59,14 @@ class KeyframeGraphDetector
       KeyframeVector& keyframes,
       KeyframeAssociationVector& associations);
 
+    void setMaxRansacIterations(int max_ransac_iterations);
+    void setNRansacCandidates(int n_ransac_candidates);
+    void setKNearestNeighbors(int k_nearest_neighbors);
+    void setMinRansacInliers(int min_ransac_inliers);
+    void setMaxCorrespDistEucl(double max_corresp_dist_eucl);
+    void setMaxCorrespDistDesc(double max_corresp_dist_desc);
+    void setNKeypoints(int n_keypoints);
+
    protected:
   
     ros::NodeHandle nh_;          ///< the public nodehandle
