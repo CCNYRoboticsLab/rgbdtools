@@ -136,8 +136,11 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
   // update the model tree
   model_tree_.setInputCloud(model_ptr_);
 
+  // update model metadata
   model_ptr_->width = model_ptr_->points.size();
-
+  model_ptr_->header.stamp.sec  = frame.header.stamp.sec;
+  model_ptr_->header.stamp.nsec = frame.header.stamp.nsec;
+  
   return result;
 }
 
