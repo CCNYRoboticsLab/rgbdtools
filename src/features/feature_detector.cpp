@@ -39,22 +39,30 @@ FeatureDetector::~FeatureDetector()
 void FeatureDetector::findFeatures(RGBDFrame& frame)
 {
   boost::mutex::scoped_lock(mutex_);
-  
+
   const cv::Mat& input_img = frame.rgb_img;
 
-  // convert from RGB to grayscale
   cv::Mat gray_img(input_img.rows, input_img.cols, CV_8UC1);
-  cvtColor(input_img, gray_img, CV_BGR2GRAY);
+  const cv::Mat* ptarget_img = NULL;
+
+  if (input_img.type() != CV_8UC1)
+  {
+    // convert from RGB to grayscale only if necessary
+    cvtColor(input_img, gray_img, CV_BGR2GRAY);
+    ptarget_img = &gray_img;
+  }
+  else
+    ptarget_img = &input_img;
 
   // blur if needed
   if(smooth_ > 0)
   {
     int blur_size = smooth_*2 + 1;
-    cv::GaussianBlur(gray_img, gray_img, cv::Size(blur_size, blur_size), 0);
+    cv::GaussianBlur(*ptarget_img, *ptarget_img, cv::Size(blur_size, blur_size), 0);
   }
 
   // find the 2D coordinates of keypoints
-  findFeatures(frame, gray_img);
+  findFeatures(frame, *ptarget_img);
 
   // calculates the 3D position and covariance of features
   frame.computeDistributions(max_range_, max_stdev_);
