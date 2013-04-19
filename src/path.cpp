@@ -1,5 +1,5 @@
 /**
- *  @file rgbdtools.h
+ *  @file rgbd_keyframe.cpp
  *  @author Ivan Dryanovski <ivan.dryanovski@gmail.com>
  * 
  *  @section LICENSE
@@ -21,29 +21,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RGBDTOOLS_RGBDTOOLS_H
-#define RGBDTOOLS_RGBDTOOLS_H
-
-#include "rgbdtools/types.h"
-#include "rgbdtools/rgbd_util.h"
-
-#include "rgbdtools/header.h"
-#include "rgbdtools/rgbd_frame.h"
-#include "rgbdtools/rgbd_keyframe.h"
 #include "rgbdtools/path.h"
 
-#include "rgbdtools/features/feature_detector.h"
-#include "rgbdtools/features/gft_detector.h"
-#include "rgbdtools/features/orb_detector.h"
-#include "rgbdtools/features/star_detector.h"
-#include "rgbdtools/features/surf_detector.h"
+namespace rgbdtools {
+  
+bool savePath(
+  const AffineTransformVector& path, 
+  const std::string& file_path)
+{
+  std::string filename  = file_path + "/path.txt";
+  
+  return false;
+}
 
-#include "rgbdtools/registration/motion_estimation.h"
-#include "rgbdtools/registration/motion_estimation_icp_prob_model.h"
+bool loadPath(
+  AffineTransformVector& path, 
+  const std::string& file_path)
+{
+  std::string filename  = file_path + "/path.txt";
+ 
+  return false;
+}
+  
 
-#include "rgbdtools/graph/keyframe_association.h"
-#include "rgbdtools/graph/keyframe_graph_detector.h"
-#include "rgbdtools/graph/keyframe_graph_solver.h"
-#include "rgbdtools/graph/keyframe_graph_solver_g2o.h"
-
-#endif // RGBDTOOLS_RGBDTOOLS_H
+} // namespace rgbdtools

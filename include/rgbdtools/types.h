@@ -25,7 +25,6 @@
 #define RGBDTOOLS_TYPES_H
 
 #include <Eigen/Core>
-#include <Eigen/Core>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <pcl/point_types.h>
