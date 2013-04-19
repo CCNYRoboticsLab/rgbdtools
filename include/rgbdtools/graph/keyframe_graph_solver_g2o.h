@@ -56,6 +56,11 @@ class KeyframeGraphSolverG2O: public KeyframeGraphSolver
     void solve(KeyframeVector& keyframes,
                KeyframeAssociationVector& associations);
 
+    void solve(
+      const std::vector<int>& keyframe_pose_indices,
+      std::vector<AffineTransform>& path,
+      KeyframeAssociationVector& associations);
+    
   private:
 
     int vertexIdx;
@@ -82,7 +87,9 @@ class KeyframeGraphSolverG2O: public KeyframeGraphSolver
      * the keyframe vector
      * @param keyframes the vector of keyframes to modify the poses
      */
-    void updatePoses(KeyframeVector& keyframes);
+    //void updatePoses(KeyframeVector& keyframes);
+    
+    void getOptimizedPoses(std::vector<AffineTransform>& poses);
 };
 
 } // namespace rgbdtools

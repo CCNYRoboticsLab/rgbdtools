@@ -44,6 +44,71 @@ KeyframeGraphSolverG2O::~KeyframeGraphSolverG2O()
 }
 
 void KeyframeGraphSolverG2O::solve(
+  const std::vector<int>& keyframe_pose_indices,
+  std::vector<AffineTransform>& path,
+  KeyframeAssociationVector& associations)
+{  
+  // add vertices
+  printf("Adding vertices...\n");
+  for (unsigned int p_idx = 0; p_idx < path.size(); ++p_idx)
+  {
+    addVertex(path[p_idx], p_idx);   
+  }
+  
+  printf("Adding VO edges...\n");
+  // add edges odometry edges
+  for (unsigned int p_idx = 0; p_idx < path.size() - 1; ++p_idx)
+  {
+    int from_idx = p_idx;
+    int to_idx   = p_idx+1;
+       
+    Eigen::Matrix<double,6,6> inf = Eigen::Matrix<double,6,6>::Identity();
+    
+    AffineTransform tf = path[p_idx].inverse() * path[to_idx];
+    
+    addEdge(from_idx, to_idx, tf, inf);
+  }
+  
+  printf("Adding RANSAC edges...\n");
+  for (unsigned int as_idx = 0; as_idx < associations.size(); ++as_idx)
+  { 
+    const KeyframeAssociation& association = associations[as_idx];
+    
+    if (association.type != KeyframeAssociation::RANSAC) continue;
+    
+    int from_idx = association.kf_idx_a;
+    int to_idx   = association.kf_idx_b;
+    
+    // get indices from the path
+    from_idx =  keyframe_pose_indices[from_idx];
+    to_idx   =  keyframe_pose_indices[to_idx];
+    
+    int matches = association.matches.size();
+    
+    Eigen::Matrix<double,6,6> inf = Eigen::Matrix<double,6,6>::Identity();
+    inf = inf * matches;
+    
+    addEdge(from_idx, to_idx, association.a2b, inf);
+  }
+  
+  // run the optimization
+  printf("Optimizing...\n");
+  optimizeGraph();
+  
+  // update the poses
+  printf("Updating poses...\n");
+
+  std::vector<AffineTransform> optimized_poses;
+  optimized_poses.resize(path.size());
+  getOptimizedPoses(optimized_poses);
+  
+  for (unsigned int p_idx = 0; p_idx < path.size(); ++p_idx)
+  {
+    path[p_idx] = optimized_poses[p_idx];
+  }
+}
+
+void KeyframeGraphSolverG2O::solve(
   KeyframeVector& keyframes,
   KeyframeAssociationVector& associations)
 {  
@@ -87,7 +152,16 @@ void KeyframeGraphSolverG2O::solve(
   
   // update the poses
   printf("Updating poses...\n");
-  updatePoses(keyframes);
+
+  std::vector<AffineTransform> optimized_poses;
+  optimized_poses.resize(keyframes.size());
+  getOptimizedPoses(optimized_poses);
+  
+  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
+  {
+    RGBDKeyframe& keyframe = keyframes[kf_idx];
+    keyframe.pose = optimized_poses[kf_idx];
+  }
 }
 
 void KeyframeGraphSolverG2O::addVertex(
@@ -173,15 +247,23 @@ void KeyframeGraphSolverG2O::optimizeGraph()
   optimizer.optimize(10);
 }
 
+/*
 void KeyframeGraphSolverG2O::updatePoses(
   KeyframeVector& keyframes)
 {
   for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
   {
     RGBDKeyframe& keyframe = keyframes[kf_idx];
-    
+    keyframe.pose = optimized_poses[kf_idx];
+  }
+}*/
+
+void KeyframeGraphSolverG2O::getOptimizedPoses(std::vector<AffineTransform>& poses)
+{
+  for (unsigned int idx = 0; idx < poses.size(); ++idx)
+  {   
     //Transform the vertex pose from G2O quaternion to Eigen::Matrix4f
-    g2o::VertexSE3* vertex = dynamic_cast<g2o::VertexSE3*>(optimizer.vertex(kf_idx));
+    g2o::VertexSE3* vertex = dynamic_cast<g2o::VertexSE3*>(optimizer.vertex(idx));
     double optimized_pose_quat[7];
     vertex->getEstimateData(optimized_pose_quat);
 
@@ -211,7 +293,7 @@ void KeyframeGraphSolverG2O::updatePoses(
     optimized_pose(2,3)=optimized_pose_quat[2];
 
     //Set the optimized pose to the vector of poses
-    keyframe.pose = optimized_pose;
+    poses[idx] = optimized_pose;
   }
 }
 
