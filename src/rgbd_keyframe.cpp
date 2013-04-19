@@ -40,6 +40,9 @@ RGBDKeyframe::RGBDKeyframe(const RGBDFrame& frame):
   depth_img = frame.depth_img.clone();
   intr      = frame.intr.clone();
   header    = frame.header;
+  
+  // this preserves the index number of the original frame
+  index = frame.index;
 }
 
 bool RGBDKeyframe::save(

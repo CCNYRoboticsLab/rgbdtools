@@ -64,7 +64,9 @@ class RGBDFrame
               const cv::Mat& depth_img_in,
               const cv::Mat& intr_in,
               const Header& header_in);
-        
+    
+    int index;
+    
     Header header; ///< Header taken from rgb_msg
     cv::Mat rgb_img;         ///< RGB image (8UC3)
     cv::Mat depth_img;       ///< Depth image in mm (16UC1). 0 = invalid data
