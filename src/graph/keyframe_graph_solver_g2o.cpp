@@ -57,14 +57,18 @@ void KeyframeGraphSolverG2O::solve(
   
   printf("Adding VO edges...\n");
   // add edges odometry edges
-  for (unsigned int p_idx = 0; p_idx < path.size() - 1; ++p_idx)
+  assert(path.size() > 1);
+  for (unsigned int p_idx = 0; p_idx < path.size()-1; ++p_idx)
   {
     int from_idx = p_idx;
     int to_idx   = p_idx+1;
        
+    const AffineTransform& from_pose = path[from_idx];
+    const AffineTransform& to_pose   = path[to_idx];
+    
     Eigen::Matrix<double,6,6> inf = Eigen::Matrix<double,6,6>::Identity();
     
-    AffineTransform tf = path[p_idx].inverse() * path[to_idx];
+    AffineTransform tf = from_pose.inverse() * to_pose;
     
     addEdge(from_idx, to_idx, tf, inf);
   }
