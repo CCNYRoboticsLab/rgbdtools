@@ -58,7 +58,12 @@ class KeyframeGraphSolver
      */
     virtual void solve(
       KeyframeVector& keyframes,
-      KeyframeAssociationVector& associations) = 0;
+      const KeyframeAssociationVector& associations) = 0;
+      
+    virtual void solve(
+      KeyframeVector& keyframes,
+      const KeyframeAssociationVector& associations,
+      AffineTransformVector& path) = 0;
 };
 
 } // namespace rgbdtools
