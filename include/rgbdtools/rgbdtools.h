@@ -30,7 +30,6 @@
 #include "rgbdtools/header.h"
 #include "rgbdtools/rgbd_frame.h"
 #include "rgbdtools/rgbd_keyframe.h"
-#include "rgbdtools/path.h"
 
 #include "rgbdtools/features/feature_detector.h"
 #include "rgbdtools/features/gft_detector.h"

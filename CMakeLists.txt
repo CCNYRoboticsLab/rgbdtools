@@ -59,7 +59,6 @@ add_library (rgbdtools SHARED
   src/rgbd_frame.cpp
   src/rgbd_keyframe.cpp
   src/rgbd_util.cpp
-  src/path.cpp
   src/features/feature_detector.cpp
   src/features/orb_detector.cpp
   src/features/surf_detector.cpp
