@@ -12,6 +12,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 find_package(PkgConfig)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
+
 # OpenCV
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -29,22 +31,27 @@ find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})    
 
-message("Boost: ${Boost_LIBRARIES}")
-message("OpenCV: ${OpenCV_LIBRARIES}")
+#message("Boost: ${Boost_LIBRARIES}")
+#message("OpenCV: ${OpenCV_LIBRARIES}")
 
 # g2o:
 #   use script to find g2o
 #   if not installed, set G2O_INCLUDE_DIRS manually using -DG2O_INCLUDE_DIRS
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 find_package(G2O)
 include_directories(${G2O_INCLUDE_DIRS})
 link_directories(${G2O_LIBRARY_DIRS})
 link_libraries(${G2O_LIBRARIES})    
 
-message("G2O inc. dirs: ${G2O_INCLUDE_DIRS}")
-message("G2O lib. dirs: ${G2O_LIBRARY_DIRS}")
-message("G2O libs: ${G2O_LIBRARIES}")
+#message("G2O inc. dirs: ${G2O_INCLUDE_DIRS}")
+#message("G2O lib. dirs: ${G2O_LIBRARY_DIRS}")
+#message("G2O libs: ${G2O_LIBRARIES}")
+
+#suitesparse
+FIND_PACKAGE(SuiteSparse)
+include_directories(${SUITESPARSE_INCLUDE_DIRS})
+
+#message("SUITESPARSE_INCLUDE_DIRS: ${SUITESPARSE_INCLUDE_DIRS}")
 
 # build rgbdtools library
 
