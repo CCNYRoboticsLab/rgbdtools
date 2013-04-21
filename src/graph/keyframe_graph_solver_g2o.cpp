@@ -44,9 +44,9 @@ KeyframeGraphSolverG2O::~KeyframeGraphSolverG2O()
 }
 
 void KeyframeGraphSolverG2O::solve(
-  const std::vector<int>& keyframe_pose_indices,
-  std::vector<AffineTransform>& path,
-  KeyframeAssociationVector& associations)
+  KeyframeVector& keyframes,
+  const KeyframeAssociationVector& associations,
+  AffineTransformVector& path)
 {  
   // add vertices
   printf("Adding vertices...\n");
@@ -55,43 +55,50 @@ void KeyframeGraphSolverG2O::solve(
     addVertex(path[p_idx], p_idx);   
   }
   
+  // add edges odometry edges 
   printf("Adding VO edges...\n");
-  // add edges odometry edges
-  assert(path.size() > 1);
-  for (unsigned int p_idx = 0; p_idx < path.size()-1; ++p_idx)
+  
+  if(path.size() > 1)
   {
-    int from_idx = p_idx;
-    int to_idx   = p_idx+1;
-       
-    const AffineTransform& from_pose = path[from_idx];
-    const AffineTransform& to_pose   = path[to_idx];
-    
-    Eigen::Matrix<double,6,6> inf = Eigen::Matrix<double,6,6>::Identity();
-    
-    AffineTransform tf = from_pose.inverse() * to_pose;
-    
-    addEdge(from_idx, to_idx, tf, inf);
+    InformationMatrix path_inf = InformationMatrix::Identity();
+  
+    for (unsigned int p_idx = 0; p_idx < path.size()-1; ++p_idx)
+    {
+      int from_idx = p_idx;
+      int to_idx   = p_idx+1;
+         
+      const AffineTransform& from_pose = path[from_idx];
+      const AffineTransform& to_pose   = path[to_idx];
+          
+      AffineTransform tf = from_pose.inverse() * to_pose;
+      
+      addEdge(from_idx, to_idx, tf, path_inf);
+    }
   }
   
   printf("Adding RANSAC edges...\n");
+  InformationMatrix ransac_inf = InformationMatrix::Identity();
+  
   for (unsigned int as_idx = 0; as_idx < associations.size(); ++as_idx)
   { 
     const KeyframeAssociation& association = associations[as_idx];
     
+    // skip non-ransac associations
     if (association.type != KeyframeAssociation::RANSAC) continue;
     
-    int from_idx = association.kf_idx_a;
-    int to_idx   = association.kf_idx_b;
+    // get the keyframe indices
+    int kf_from_idx = association.kf_idx_a;
+    int kf_to_idx   = association.kf_idx_b;
+        
+    // get the corresponding frame indices (also matches path index)
+    int from_idx = keyframes[kf_from_idx].index;
+    int to_idx   = keyframes[kf_to_idx].index;
     
-    // get indices from the path
-    from_idx =  keyframe_pose_indices[from_idx];
-    to_idx   =  keyframe_pose_indices[to_idx];
+    // calculate the information matrix
+    int n_matches = association.matches.size();
+    InformationMatrix inf = ransac_inf * n_matches;
     
-    int matches = association.matches.size();
-    
-    Eigen::Matrix<double,6,6> inf = Eigen::Matrix<double,6,6>::Identity();
-    inf = inf * matches;
-    
+    // add the edge
     addEdge(from_idx, to_idx, association.a2b, inf);
   }
   
@@ -99,22 +106,27 @@ void KeyframeGraphSolverG2O::solve(
   printf("Optimizing...\n");
   optimizeGraph();
   
-  // update the poses
-  printf("Updating poses...\n");
+  // update the keyframe poses
+  printf("Updating keyframe poses...\n");
 
-  std::vector<AffineTransform> optimized_poses;
-  optimized_poses.resize(path.size());
-  getOptimizedPoses(optimized_poses);
+  AffineTransformVector kf_optimized_poses;
+  kf_optimized_poses.resize(keyframes.size());
+  getOptimizedPoses(kf_optimized_poses);
   
-  for (unsigned int p_idx = 0; p_idx < path.size(); ++p_idx)
+  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
   {
-    path[p_idx] = optimized_poses[p_idx];
+    RGBDKeyframe& keyframe = keyframes[kf_idx];
+    keyframe.pose = kf_optimized_poses[kf_idx];
   }
+  
+  // update the path poses
+  printf("Updating path poses...\n");
+  getOptimizedPoses(path);
 }
 
 void KeyframeGraphSolverG2O::solve(
   KeyframeVector& keyframes,
-  KeyframeAssociationVector& associations)
+  const KeyframeAssociationVector& associations)
 {  
   // add vertices
   printf("Adding vertices...\n");
@@ -154,10 +166,10 @@ void KeyframeGraphSolverG2O::solve(
   printf("Optimizing...\n");
   optimizeGraph();
   
-  // update the poses
-  printf("Updating poses...\n");
+  // update the keyframe poses
+  printf("Updating keyframe poses...\n");
 
-  std::vector<AffineTransform> optimized_poses;
+  AffineTransformVector optimized_poses;
   optimized_poses.resize(keyframes.size());
   getOptimizedPoses(optimized_poses);
   
@@ -251,18 +263,7 @@ void KeyframeGraphSolverG2O::optimizeGraph()
   optimizer.optimize(10);
 }
 
-/*
-void KeyframeGraphSolverG2O::updatePoses(
-  KeyframeVector& keyframes)
-{
-  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
-  {
-    RGBDKeyframe& keyframe = keyframes[kf_idx];
-    keyframe.pose = optimized_poses[kf_idx];
-  }
-}*/
-
-void KeyframeGraphSolverG2O::getOptimizedPoses(std::vector<AffineTransform>& poses)
+void KeyframeGraphSolverG2O::getOptimizedPoses(AffineTransformVector& poses)
 {
   for (unsigned int idx = 0; idx < poses.size(); ++idx)
   {   
