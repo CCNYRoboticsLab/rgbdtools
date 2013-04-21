@@ -106,22 +106,17 @@ void KeyframeGraphSolverG2O::solve(
   printf("Optimizing...\n");
   optimizeGraph();
   
-  // update the keyframe poses
-  printf("Updating keyframe poses...\n");
-
-  AffineTransformVector kf_optimized_poses;
-  kf_optimized_poses.resize(keyframes.size());
-  getOptimizedPoses(kf_optimized_poses);
-  
-  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
-  {
-    RGBDKeyframe& keyframe = keyframes[kf_idx];
-    keyframe.pose = kf_optimized_poses[kf_idx];
-  }
-  
   // update the path poses
   printf("Updating path poses...\n");
   getOptimizedPoses(path);
+  
+  // update the keyframe poses
+  printf("Updating keyframe poses...\n");
+  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
+  {
+    RGBDKeyframe& keyframe = keyframes[kf_idx];
+    keyframe.pose = path[keyframe.index];
+  }
 }
 
 void KeyframeGraphSolverG2O::solve(
