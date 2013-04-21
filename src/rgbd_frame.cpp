@@ -372,32 +372,13 @@ bool RGBDFrame::save(
     return false;
   }
 
-/*
-  // save cloud
-  if (save_cloud)
-  {
-    pcl::PCDWriter writer;
-    int result_pcd;
-
-    PointCloudT cloud;
-    frame.constructDensePointCloud(cloud);
-    
-    result_pcd = writer.writeBinary<PointT>(cloud_filename, cloud);  
-
-    if (result_pcd != 0) 
-    {
-      ROS_ERROR("Error saving point cloud");
-      return false;
-    }
-  }
-*/
-
   // save header
   cv::FileStorage fs_h(header_filename, cv::FileStorage::WRITE);
   fs_h << "frame_id"   << frame.header.frame_id;
   fs_h << "seq"        << (int)frame.header.seq;
   fs_h << "stamp_sec"  << (int)frame.header.stamp.sec;
   fs_h << "stamp_nsec" << (int)frame.header.stamp.nsec;
+  fs_h << "index"      << frame.index;
 
   // save images 
   cv::imwrite(rgb_filename,   frame.rgb_img);
@@ -440,6 +421,8 @@ bool RGBDFrame::load(RGBDFrame& frame, const std::string& path)
   frame.header.seq        = seq;
   frame.header.stamp.sec  = sec;
   frame.header.stamp.nsec = nsec;
+
+  fs_h["index"] >> frame.index;
 
   // load images
   frame.rgb_img = cv::imread(rgb_filename);
