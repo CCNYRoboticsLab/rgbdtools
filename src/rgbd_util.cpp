@@ -440,4 +440,13 @@ void unwarpDepthImage(
   }
 }
  
+void setRPY(
+  float roll, float pitch, float yaw, 
+  Eigen::Matrix3f& m)
+{
+  m = Eigen::AngleAxisf(roll,  Eigen::Vector3f::UnitX()) * 
+      Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) *
+      Eigen::AngleAxisf(yaw,   Eigen::Vector3f::UnitZ());
+}
+ 
 } // namespace rgbdtools

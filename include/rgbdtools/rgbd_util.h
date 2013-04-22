@@ -185,7 +185,7 @@ void eigenAffineToXYZRPY(
 void XYZRPYToEigenAffine(
   float x, float y, float z, 
   float roll, float pitch, float yaw, 
-  AffineTransform& ttransform);
+  AffineTransform& t);
 
 void getTfDifference(
   const AffineTransform& transform, 
@@ -208,6 +208,10 @@ void unwarpDepthImage(
   const cv::Mat& coeff1,
   const cv::Mat& coeff2,
   int fit_mode=DEPTH_FIT_QUADRATIC);
+
+void setRPY(
+  float roll, float pitch, float yaw, 
+  Matrix3f& m);
 
 } // namespace rgbdtools
 
