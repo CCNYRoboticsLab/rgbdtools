@@ -5,8 +5,8 @@ project(rgbdtools)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_BUILD_TYPE Release)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
@@ -53,6 +53,7 @@ include_directories(${SUITESPARSE_INCLUDE_DIRS})
 
 #message("SUITESPARSE_INCLUDE_DIRS: ${SUITESPARSE_INCLUDE_DIRS}")
 
+####################################################
 # build rgbdtools library
 
 add_library (rgbdtools SHARED
@@ -76,6 +77,19 @@ target_link_libraries (rgbdtools
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES})
   
+####################################################
+# build applications
+
+add_executable(global_cloud_align
+  apps/global_cloud_align.cpp)
+  
+target_link_libraries (global_cloud_align 
+  rgbdtools
+  ${Boost_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES})
+  
+install(TARGETS global_cloud_align DESTINATION bin)
 install(TARGETS rgbdtools DESTINATION lib)
 install(DIRECTORY include/rgbdtools DESTINATION include)
 

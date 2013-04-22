@@ -368,7 +368,7 @@ bool RGBDFrame::save(
 
   if (!directory_result)    
   {
-    ROS_ERROR("Could not create directory: %s", path.c_str());
+    std::cerr << "Could not create directory:" <<  path << std::endl;
     return false;
   }
 
@@ -405,7 +405,7 @@ bool RGBDFrame::load(RGBDFrame& frame, const std::string& path)
       !boost::filesystem::exists(header_filename) ||
       !boost::filesystem::exists(intr_filename) )
   {
-    ROS_ERROR("files for loading frame not found");
+    std::cerr << "files for loading frame not found" << std::endl;
     return false;
   }
 

@@ -87,7 +87,7 @@ bool RGBDKeyframe::load(RGBDKeyframe& keyframe, const std::string& path)
   if (!boost::filesystem::exists(pose_filename)  ||
       !boost::filesystem::exists(prop_filename)  )
   {
-    ROS_ERROR("files for loading keyframe not found");
+    std::cerr << "files for loading keyframe not found" <<std::endl;
     return false;
   }
 
@@ -144,13 +144,13 @@ bool loadKeyframes(
 
     if (boost::filesystem::exists(path_kf))
     {
-      ROS_INFO("Loading %s", path_kf.c_str());
+      std::cout << "Loading " << path_kf << std::endl;
       RGBDKeyframe keyframe;
       bool result_load = RGBDKeyframe::load(keyframe, path_kf);
       if (result_load) keyframes.push_back(keyframe);
       else
       {
-        ROS_WARN("Error loading"); 
+        std::cerr << "Error loading" << std::endl; 
         return false;
       }
     } 

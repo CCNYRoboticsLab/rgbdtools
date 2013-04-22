@@ -111,7 +111,7 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
 
   if (model_size_ == 0)
   {
-    ROS_INFO("No points in model: initializing from features.");
+    std::cout << "No points in model: initializing from features." << std::endl;
     motion.setIdentity();
     initializeModelFromData(data_means, data_covariances);
     result = true;
@@ -166,8 +166,12 @@ bool MotionEstimationICPProbModel::alignICPEuclidean(
    
     if ((int)data_indices.size() <  min_correspondences_)
     {
-      ROS_WARN("[ICP] Not enough correspondences (%d of %d minimum). Leacing ICP loop",
-        (int)data_indices.size(),  min_correspondences_);
+      std::cerr << "[ICP] Not enough correspondences ("
+                << (int)data_indices.size() 
+                << " of "
+                << min_correspondences_ 
+                << " minimum). Leacing ICP loop"
+                << std::endl;
       return false;
     }
 

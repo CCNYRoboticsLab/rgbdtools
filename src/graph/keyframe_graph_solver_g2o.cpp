@@ -48,8 +48,6 @@ void KeyframeGraphSolverG2O::solve(
   const KeyframeAssociationVector& associations,
   AffineTransformVector& path)
 {  
-  printf("path.size(): %d\n", path.size());
-
   // add vertices
   printf("Adding vertices...\n");
   for (unsigned int p_idx = 0; p_idx < path.size(); ++p_idx)
@@ -120,8 +118,6 @@ void KeyframeGraphSolverG2O::solve(
     printf("keyframe.index: %d\n", keyframe.index);
     keyframe.pose = path[keyframe.index];
   }
-  
-  printf("path.size(): %d\n", path.size());
 }
 
 void KeyframeGraphSolverG2O::solve(

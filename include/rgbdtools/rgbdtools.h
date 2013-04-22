@@ -26,6 +26,7 @@
 
 #include "rgbdtools/types.h"
 #include "rgbdtools/rgbd_util.h"
+#include "rgbdtools/map_util.h"
 
 #include "rgbdtools/header.h"
 #include "rgbdtools/rgbd_frame.h"

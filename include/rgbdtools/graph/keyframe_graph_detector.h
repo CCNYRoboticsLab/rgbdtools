@@ -67,11 +67,6 @@ class KeyframeGraphDetector
     void setMaxCorrespDistDesc(double max_corresp_dist_desc);
     void setNKeypoints(int n_keypoints);
 
-   protected:
-  
-    ros::NodeHandle nh_;          ///< the public nodehandle
-    ros::NodeHandle nh_private_;  ///< the private nodehandle
-
    private:
 
     /** @brief Maximim iterations for the RANSAC test

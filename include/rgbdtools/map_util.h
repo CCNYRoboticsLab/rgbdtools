@@ -13,8 +13,6 @@
 
 namespace rgbdtools {
 
-void alignGlobalMap(const PointCloudT::Ptr& cloud);
-
 void buildExpectedPhiHistorgtam(
   cv::Mat& histogram,
   double degrees_per_bin,

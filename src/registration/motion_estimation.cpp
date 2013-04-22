@@ -49,7 +49,7 @@ AffineTransform MotionEstimation::getMotionEstimation(RGBDFrame& frame)
 
   if (frame.n_valid_keypoints == 0)
   {
-    ROS_WARN("No features detected.");
+    std::cerr << "No features detected." << std::endl;
     result = false;
   }
   else
@@ -59,7 +59,8 @@ AffineTransform MotionEstimation::getMotionEstimation(RGBDFrame& frame)
 
   if (!result)
   {
-    ROS_WARN("Could not estimate motion from RGBD data, using Identity transform.");
+    std::cerr << "Could not estimate motion from RGBD data, using Identity transform." 
+              << std::endl;
     motion.setIdentity();
   }
 

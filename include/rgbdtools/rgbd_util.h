@@ -24,7 +24,6 @@
 #ifndef RGBDTOOLS_RGBD_UTIL_H
 #define RGBDTOOLS_RGBD_UTIL_H
 
-#include <ros/ros.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/filters/voxel_grid.h>
