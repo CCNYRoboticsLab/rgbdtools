@@ -30,6 +30,7 @@
 
 #include "rgbdtools/types.h"
 #include "rgbdtools/rgbd_keyframe.h"
+#include "rgbdtools/map_util.h"
 #include "rgbdtools/graph/keyframe_association.h"
 
 namespace rgbdtools {
@@ -41,6 +42,12 @@ class KeyframeGraphDetector
 {
   public:
 
+    enum CandidateGenerationMethod
+    {
+      CANDIDATE_GENERATION_BRUTE_FORCE,
+      CANDIDATE_GENERATION_TREE
+    };
+
     /** @brief Constructor from ROS nodehandles
      * @param nh the public nodehandle
      * @param nh_private the private nodehandle
@@ -51,6 +58,11 @@ class KeyframeGraphDetector
      */
     virtual ~KeyframeGraphDetector();
 
+    void setNCandidates(int n_candidates);
+    void setKNearestNeighbors(int k_nearest_neighbors);
+    void setNKeypoints(int n_keypoints);
+    void setCandidateGenerationMethod(CandidateGenerationMethod candidate_method);
+    
     /** Main method for generating associatuions
      * @param keyframes the input vector of RGBD keyframes
      * @param associations reference to the output vector of associations
@@ -59,24 +71,43 @@ class KeyframeGraphDetector
       KeyframeVector& keyframes,
       KeyframeAssociationVector& associations);
 
-    void setMaxRansacIterations(int max_ransac_iterations);
-    void setNRansacCandidates(int n_ransac_candidates);
-    void setKNearestNeighbors(int k_nearest_neighbors);
-    void setMinRansacInliers(int min_ransac_inliers);
-    void setMaxCorrespDistEucl(double max_corresp_dist_eucl);
-    void setMaxCorrespDistDesc(double max_corresp_dist_desc);
-    void setNKeypoints(int n_keypoints);
+    // --------------------------------------------
+
+    void buildSURFAssociationMatrix(const KeyframeVector& keyframes);
 
    private:
 
     /** @brief Maximim iterations for the RANSAC test
      */
-    int max_ransac_iterations_;
+    int ransac_max_iterations_;
+    
+    /** @brief How many inliers are required to pass the RANSAC test.
+     * 
+     * If a candidate keyframe has fewer correspondences or more, 
+     * it will not be eligible for a RANSAC test 
+     */
+    int ransac_min_inliers_;
+    
+    bool ransac_use_desc_ratio_test_;
+    
+    double ransac_max_desc_ratio_;
+    
+    /** @brief Maximum distance (in descriptor space) between
+     * two features to be considered a correspondence candidate
+     */
+    double ransac_max_desc_dist_;
+    
+    /** @brief Maximum distance squared (in Euclidean space) between
+     * two features to be considered a correspondence candidate
+     */
+    double ransac_max_eucl_dist_sq_;
+    
+    double ransac_sufficient_inlier_ratio_;
     
     /** @brief If true, positive RANSAC results will be saved
      * to file as images with keypoint correspondences
      */
-    bool save_ransac_results_;
+    bool ransac_save_results_;
     
     /** @brief The path where to save images if save_ransac_results_ is true
      */
@@ -85,141 +116,52 @@ class KeyframeGraphDetector
     /** @brief For kd-tree based correspondences, how many candidate
      * keyframes will be tested agains the query keyframe using a RANSAC test
      */
-    double n_ransac_candidates_;
+    double n_candidates_;
     
     /** @brief How many nearest neighbors are requested per keypoint
      */
     int k_nearest_neighbors_;    
-    
-    /** @brief How many inliers are required to pass the RANSAC test.
-     * 
-     * If a candidate keyframe has fewer correspondences or more, 
-     * it will not be eligible for a RANSAC test 
-     */
-    int min_ransac_inliers_;
-    
-    /** @brief Maximum distance (in descriptor space) between
-     * two features to be considered a correspondence candidate
-     */
-    double max_corresp_dist_desc_;
-    
-    /** @brief Maximum distance (in Euclidean space) between
-     * two features to be considered a correspondence candidate
-     */
-    double max_corresp_dist_eucl_;
-    
-    /** @brief Derived from max_corresp_dist_eucl_
-     */
-    double max_corresp_dist_eucl_sq_;
-    
+        
     /** @brief Number of desired keypoints to detect in each image
      */
     int n_keypoints_;
+    
+    /** @brief TREE of BRUTE_FORCE */
+    CandidateGenerationMethod candidate_method_;
+              
 
-    /** @brief Goes through all the keyframes and fills out the
-     * required information (features, distributinos, etc)
-     * which will be needed by RANSAC matching
-     *
-     * Uses SURF features with an adaptive thershold to ensure a
-     * minimum number of feautres (n_keypoints_) detected in each frame
-     * 
-     * @param keyframes the vector of keyframes to be used for associations
-     */
+    
+    //------------------------------------------
+    
+    /** @brief CV_8UC1, 1 if associated, 0 otherwise */
+    cv::Mat association_matrix_;
+    
+    /** @brief CV_8UC1, 1 if candidate, 0 otherwise */
+    cv::Mat candidate_matrix_;
+    
+    /** @brief CV_32FC1, for tree-based matching, contains number of inlier matches */
+    cv::Mat correspondence_matrix_;
+    
+    /** @brief CV_32FC1, for tree-based matching, contains number of total matches */
+    cv::Mat match_matrix_;  
+    
+    // ------------
+    
     void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
-
-    /** @brief Creates associations based on the visual odometry poses
-     * of the frames, ie, associations between consecutive frames only.
-     * 
-     * @param keyframes the input vector of RGBD keyframes
-     * @param associations reference to the output vector of associations
-     */
-    void visualOdometryAssociations(
-      KeyframeVector& keyframes,
-      KeyframeAssociationVector& associations);
     
-    /** @brief Creates associations based on visual matching between
-     * keyframes through a RANSAC test.
-     * 
-     * Candidates for RANSAC testing are determined by building a kd-tree of
-     * all the features (across all keyframe). Then for each keyframe, the tree
-     * is used to determine a number of possible candidate keyframes. 
-     * RANSAC is performed between the query frame and the valid candidates.
-     * 
-     * @param keyframes the input vector of RGBD keyframes
-     * @param associations reference to the output vector of associations
-     */
-    void treeAssociations(
-      KeyframeVector& keyframes,
-      KeyframeAssociationVector& associations);   
-
-    /** @brief Creates associations based on visual matching between
-     * keyframes through a RANSAC test (for manually added frames)
-     * 
-     * Performs a brute force (each-to-each) matching between all frames which have 
-     * been manually added.
-     * 
-     * @param keyframes the input vector of RGBD keyframes
-     * @param associations reference to the output vector of associations
-     */
-    void manualBruteForceAssociations(
-      KeyframeVector& keyframes,
-      KeyframeAssociationVector& associations);
-
-    /** @brief Squared Euclidean distance between two features in 3D
-     * @param a the first 3D point
-     * @param b the second 3D point
-     * @return squared Euclidean distance between two a and b
-     */
-    double distEuclideanSq(const PointFeature& a, const PointFeature& b)
-    {
-      float dx = a.x - b.x;
-      float dy = a.y - b.y;
-      float dz = a.z - b.z;
-      return dx*dx + dy*dy + dz*dz;
-    }
-
-    /** @brief Returns k distinct random numbers from 0 to (n-1)
-     * @param k the number of random samples
-     * @param n the (exclusive) upper limit of the number range
-     * @param output the output vector of random numbers
-     */
-    void getRandomIndices(int k, int n, IntVector& output);
-
-    /** @brief Aggregates all features across all keyframes and trains
-     * a knn flann matcher in descriptor space
-     * @param keyframes the input keyframes
-     * @param matcher the reference to the matcher
-     */
-    void trainMatcher(const KeyframeVector& keyframes,
-                      cv::FlannBasedMatcher& matcher);
+    void buildSURFMatchMatrixTree(const KeyframeVector& keyframes);
+      
+    void buildSURFCandidateMatrixTree();
     
-    /** @brief Given two keyframes, finds all keypoint correposndences
-     * which follow a rigid transformation model
-     * 
-     * @param frame_a the first RGBD frame
-     * @param frame_b the second RGBD frame
-     * @param max_eucl_dist_sq maximum squared Euclidean distance (in meters)
-     *        between two features in a correspondence for that correspondence 
-     *        to be considered an inlier in the transformation model
-     * @param max_desc_dist maximum descriptor distance 
-     *        between two features in a correspondence for that correspondence 
-     *        to be considered an inlier in the transformation model
-     * @param sufficient_inlier_ratio if the ratio between inlier matches 
-     *        to candidate matches exceeds this, the RANSAC test terminates
-     *        successfuly
-     * @param all_matches output vector of all the matches
-     * @param best_inlier_matches output vectors of the matches which
-     *        are inliers to the best transformation model
-     * @param best_transformation the best transformation determined by RANSAC
-     */
+    void buildSURFCandidateMatrix(const KeyframeVector& keyframes);
+        
+    void buildRANSACCorrespondenceMatrix(const KeyframeVector& keyframes);
+        
     void pairwiseMatchingRANSAC(
-      RGBDFrame& frame_a, RGBDFrame& frame_b,
-      double max_eucl_dist_sq, 
-      double max_desc_dist,
-      double sufficient_inlier_ratio,
+      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
       std::vector<cv::DMatch>& all_matches,
       std::vector<cv::DMatch>& best_inlier_matches,
-      AffineTransform& best_transformation);
+      Eigen::Matrix4f& best_transformation);
 };
 
 } // namespace rgbdtools

@@ -62,10 +62,12 @@ void buildDenseAssociationMatrix(
   const KeyframeVector& keyframes,
   cv::Mat& association_matrix);
 
+/*
 void buildSURFAssociationMatrixBruteForce(
   const KeyframeVector& keyframes,
   cv::Mat& correspondence_matrix,
   int threshold);
+  */
 
 void buildSURFAssociationMatrixTree(
   const KeyframeVector& keyframes,
@@ -110,7 +112,7 @@ void compareAssociationMatrix(
   int& false_neg,
   int& total);
 
-void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
+//void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
 
 void pairwiseMatchingRANSAC(
   const RGBDFrame& frame_a, const RGBDFrame& frame_b,

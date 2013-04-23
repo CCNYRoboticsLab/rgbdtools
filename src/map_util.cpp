@@ -2,6 +2,7 @@
 
 namespace rgbdtools {
  
+ /*
 void buildSURFAssociationMatrixBruteForce(
   const KeyframeVector& keyframes,
   cv::Mat& association_matrix,
@@ -18,6 +19,7 @@ void buildSURFAssociationMatrixBruteForce(
   // threshold
   thresholdMatrix(correspondence_matrix, association_matrix, threshold);
 }
+ */
  
 void buildSURFAssociationMatrixTree(
   const KeyframeVector& keyframes,
@@ -590,6 +592,7 @@ void filterCloudByHeight(
   }
 }
 
+/*
 void prepareFeaturesForRANSAC(KeyframeVector& keyframes)
 {
   double init_surf_threshold = 400.0;
@@ -625,6 +628,7 @@ void prepareFeaturesForRANSAC(KeyframeVector& keyframes)
     keyframe.computeDistributions();
   }
 }
+*/
 
 void pairwiseMatchingRANSAC(
   const RGBDFrame& frame_a, const RGBDFrame& frame_b,
