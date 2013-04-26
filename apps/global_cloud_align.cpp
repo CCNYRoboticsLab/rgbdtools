@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
   if (argc != 3)
   {
-    printUsage();
+    printUsage(argv);
     return -1;
   }
   
@@ -25,9 +25,10 @@ int main(int argc, char** argv)
   return 0;
 }
 
-void printUsage()
+void printUsage(char** argv)
 {
-  std::cerr << "error: usage is global_yaw_histogram_align [filename_in] [filename_out]" 
+  std::cerr << "error: usage is " << argv[0] 
+            << " [filename_in] [filename_out]"
             << std::endl;
 }
 

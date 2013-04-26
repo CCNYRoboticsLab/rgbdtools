@@ -1,6 +1,7 @@
 #ifndef RGBDTOOLS_MAP_UTIL_H
 #define RGBDTOOLS_MAP_UTIL_H
 
+#include <set>
 #include <pcl/surface/mls.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
@@ -127,7 +128,12 @@ void pairwiseMatchingRANSAC(
 void getRandomIndices(
   int k, int n, IntVector& output);
 
+void get3RandomIndices(
+  int n, std::set<int>& mask, IntVector& output);
+
 double distEuclideanSq(const PointFeature& a, const PointFeature& b);
+
+void makeSymmetricOR(cv::Mat mat);
 
 } // namespace rgbdtools
 

@@ -3,7 +3,7 @@
 
 #include "rgbdtools/rgbdtools.h"
 
-void printUsage();
+void printUsage(char** argv);
 
 void alignGlobalCloud(const rgbdtools::PointCloudT::Ptr& cloud);
 

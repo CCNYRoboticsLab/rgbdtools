@@ -368,8 +368,16 @@ void thresholdMatrix(
   cv::Mat& mat_out,
   float threshold)
 {
-  mat_out = cv::Mat(mat_in.size(), CV_8UC1);
-  cv::threshold(mat_in, mat_out, threshold, 1, cv::THRESH_BINARY);   
+  mat_out = cv::Mat::zeros(mat_in.size(), CV_8UC1);
+  
+  for (int u = 0; u < mat_in.cols; ++u)
+  for (int v = 0; v < mat_in.rows; ++v)   
+  {
+    float val_in = mat_in.at<float>(v, u) ;
+    uint8_t& val_out = mat_out.at<uint8_t>(v, u); 
+    
+    if (val_in > threshold) val_out = 1;
+  }
 }
 
 void buildExpectedPhiHistorgtam(
@@ -829,6 +837,29 @@ void getRandomIndices(
   }
 }
 
+void get3RandomIndices(
+  int n, std::set<int>& mask, IntVector& output)
+{
+  int key;
+  
+  while(true)
+  {
+    output.clear();
+    getRandomIndices(3, n, output);
+    
+    // calculate a key based on the 3 random indices
+    key = output[0] * n * n + output[1] * n + output[2];
+           
+    //printf("%d %d %d\n", output[0], output[1], output[2]);
+    
+    // value not present in mask
+    if (mask.find(key) == mask.end())
+      break;
+  }
+
+  mask.insert(key);
+}
+
 double distEuclideanSq(const PointFeature& a, const PointFeature& b)
 {
   float dx = a.x - b.x;
@@ -837,6 +868,7 @@ double distEuclideanSq(const PointFeature& a, const PointFeature& b)
   return dx*dx + dy*dy + dz*dz;
 }
 
+// a = ground truth, b=meas
 void compareAssociationMatrix(
   const cv::Mat& a,
   const cv::Mat& b,
@@ -858,13 +890,33 @@ void compareAssociationMatrix(
   for (int u = 0; u < size; ++u)
   for (int v = 0; v < size; ++v)
   {
-    int val_a = a.at<uint8_t>(v,u);
-    int val_b = b.at<uint8_t>(v,u);
+    if (u !=v)
+    {
+      int val_a = a.at<uint8_t>(v,u);
+      int val_b = b.at<uint8_t>(v,u);
     
-    if (val_a != 0 && val_b == 0) false_neg++;
-    if (val_a == 0 && val_b != 0) false_pos++;
+      if (val_a != 0 && val_b == 0) false_neg++;
+      if (val_a == 0 && val_b != 0) false_pos++;
     
-    if (u !=v && val_a != 0) total++;
+      if (val_a != 0) total++;
+    }
+  }
+}
+
+void makeSymmetricOR(cv::Mat mat)
+{
+  assert(mat.rows == mat.cols);
+  int size = mat.rows;
+  
+  for (int u = 0; u < size; ++u)
+  for (int v = 0; v < size; ++v)
+  {
+    if (mat.at<uint8_t>(v, u) != 0 ||
+        mat.at<uint8_t>(u, v) != 0)
+    {
+      mat.at<uint8_t>(v, u) = 1;
+      mat.at<uint8_t>(u, v) = 1;
+    }
   }
 }
 

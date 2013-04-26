@@ -25,6 +25,7 @@
 #define RGBDTOOLS_KEYFRAME_GRAPH_DETECTOR_H
 
 #include <boost/thread/mutex.hpp>
+#include <set>
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <opencv2/nonfree/features2d.hpp>
 
@@ -45,9 +46,15 @@ class KeyframeGraphDetector
     enum CandidateGenerationMethod
     {
       CANDIDATE_GENERATION_BRUTE_FORCE,
-      CANDIDATE_GENERATION_TREE
+      CANDIDATE_GENERATION_SURF_TREE
     };
 
+    enum PairwiseMatchingMethod
+    {
+      PAIRWISE_MATCHING_BFSAC,
+      PAIRWISE_MATCHING_RANSAC,
+    };
+    
     /** @brief Constructor from ROS nodehandles
      * @param nh the public nodehandle
      * @param nh_private the private nodehandle
@@ -62,7 +69,13 @@ class KeyframeGraphDetector
     void setKNearestNeighbors(int k_nearest_neighbors);
     void setNKeypoints(int n_keypoints);
     void setCandidateGenerationMethod(CandidateGenerationMethod candidate_method);
+    void setPairwiseMatchingMethod(PairwiseMatchingMethod pairwsie_matching_method);
     
+    const cv::Mat getAssociationMatrix() const { return association_matrix_; }
+    const cv::Mat getCandidateMatrix() const { return candidate_matrix_; }
+    const cv::Mat getCorrespondenceMatrix() const { return correspondence_matrix_; }
+    const cv::Mat getMatchMatrix() const { return match_matrix_; }
+        
     /** Main method for generating associatuions
      * @param keyframes the input vector of RGBD keyframes
      * @param associations reference to the output vector of associations
@@ -73,7 +86,9 @@ class KeyframeGraphDetector
 
     // --------------------------------------------
 
-    void buildSURFAssociationMatrix(const KeyframeVector& keyframes);
+    void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
+    
+    void buildAssociationMatrix(const KeyframeVector& keyframes);
 
    private:
 
@@ -88,30 +103,33 @@ class KeyframeGraphDetector
      */
     int ransac_min_inliers_;
     
-    bool ransac_use_desc_ratio_test_;
+    bool matcher_use_desc_ratio_test_;
     
-    double ransac_max_desc_ratio_;
+    double matcher_max_desc_ratio_;
     
     /** @brief Maximum distance (in descriptor space) between
      * two features to be considered a correspondence candidate
      */
-    double ransac_max_desc_dist_;
+    double matcher_max_desc_dist_;
     
     /** @brief Maximum distance squared (in Euclidean space) between
      * two features to be considered a correspondence candidate
      */
-    double ransac_max_eucl_dist_sq_;
+    double sac_max_eucl_dist_sq_;
     
     double ransac_sufficient_inlier_ratio_;
+    
+    double ransac_confidence_;
+    double log_one_minus_ransac_confidence_;
     
     /** @brief If true, positive RANSAC results will be saved
      * to file as images with keypoint correspondences
      */
-    bool ransac_save_results_;
+    bool sac_save_results_;
     
     /** @brief The path where to save images if save_ransac_results_ is true
      */
-    std::string ransac_results_path_;
+    std::string sac_results_path_;
     
     /** @brief For kd-tree based correspondences, how many candidate
      * keyframes will be tested agains the query keyframe using a RANSAC test
@@ -129,7 +147,8 @@ class KeyframeGraphDetector
     /** @brief TREE of BRUTE_FORCE */
     CandidateGenerationMethod candidate_method_;
               
-
+    /** @brief TREE of BRUTE_FORCE */
+    PairwiseMatchingMethod pairwise_matching_method_;
     
     //------------------------------------------
     
@@ -147,21 +166,33 @@ class KeyframeGraphDetector
     
     // ------------
     
-    void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
+    void buildCandidateMatrix(const KeyframeVector& keyframes);
     
-    void buildSURFMatchMatrixTree(const KeyframeVector& keyframes);
+    void buildMatchMatrixSurfTree(const KeyframeVector& keyframes);
       
-    void buildSURFCandidateMatrixTree();
-    
-    void buildSURFCandidateMatrix(const KeyframeVector& keyframes);
+    void buildCandidateMatrixSurfTree();
+          
+    void buildCorrespondenceMatrix(const KeyframeVector& keyframes);
         
-    void buildRANSACCorrespondenceMatrix(const KeyframeVector& keyframes);
-        
-    void pairwiseMatchingRANSAC(
+    int pairwiseMatching(
       const RGBDFrame& frame_a, const RGBDFrame& frame_b,
-      std::vector<cv::DMatch>& all_matches,
-      std::vector<cv::DMatch>& best_inlier_matches,
+      DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
+    
+    int pairwiseMatchingBFSAC(
+      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      DMatchVector& best_inlier_matches,
+      Eigen::Matrix4f& best_transformation);
+    
+    int pairwiseMatchingRANSAC(
+      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      DMatchVector& best_inlier_matches,
+      Eigen::Matrix4f& best_transformation);
+    
+    void getCandidateMatches(
+      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      const cv::FlannBasedMatcher matcher,
+      DMatchVector& candidate_matches);
 };
 
 } // namespace rgbdtools

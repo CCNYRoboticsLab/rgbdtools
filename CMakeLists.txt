@@ -78,7 +78,7 @@ target_link_libraries (rgbdtools
   ${PCL_LIBRARIES})
   
 ####################################################
-# build applications
+# build global cloud align applications
 
 add_executable(global_cloud_align
   apps/global_cloud_align.cpp)
@@ -89,7 +89,20 @@ target_link_libraries (global_cloud_align
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES})
   
-install(TARGETS global_cloud_align DESTINATION bin)
+####################################################
+# build keyframe associations applications
+
+add_executable(keyframe_associations
+  apps/keyframe_associations.cpp)
+  
+target_link_libraries (keyframe_associations 
+  rgbdtools
+  ${Boost_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES})
+  
+#install(TARGETS global_cloud_align DESTINATION bin)
+#install(TARGETS keyframe_associations DESTINATION bin)
 install(TARGETS rgbdtools DESTINATION lib)
 install(DIRECTORY include/rgbdtools DESTINATION include)
 
