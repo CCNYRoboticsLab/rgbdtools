@@ -19,7 +19,6 @@ void buildSURFAssociationMatrixBruteForce(
   // threshold
   thresholdMatrix(correspondence_matrix, association_matrix, threshold);
 }
- */
  
 void buildSURFAssociationMatrixTree(
   const KeyframeVector& keyframes,
@@ -45,24 +44,8 @@ void buildSURFAssociationMatrixTree(
   // threshold
   thresholdMatrix(correspondence_matrix, association_matrix, threshold);
 }
- 
-void trainSURFMatcher(
-  const KeyframeVector& keyframes,
-  cv::FlannBasedMatcher& matcher)
-{
-  printf("Building aggregate feature vector...\n"); 
-  std::vector<cv::Mat> descriptors_vector;
-  
-  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
-  {
-    const RGBDKeyframe& keyframe = keyframes[kf_idx];
-    descriptors_vector.push_back(keyframe.descriptors);
-  }
-  matcher.add(descriptors_vector);
 
-  printf("Training feature matcher...\n");
-  matcher.train();
-}
+
  
 void buildRANSACCorrespondenceMatrix(
   const KeyframeVector& keyframes, 
@@ -137,9 +120,6 @@ void buildRANSACCorrespondenceMatrix(
   }
 }  
   
-/** @brief Takes in a matrix of matches from a SURF tree, and marks the top
- * n candidates in each row.
- */  
 void buildSURFCandidateMatrixTree(
   const cv::Mat& match_matrix,
   cv::Mat& candidate_matrix,
@@ -176,12 +156,8 @@ void buildSURFCandidateMatrixTree(
     }
   }
 }
-  
- /** @brief Builds a matrix of nearest neighbor matches between keyframes 
-  * using a kdtree
-  * 
-  * match_matrix[query,train] = X correspondences
-  */  
+
+
 void buildSURFMatchMatrixTree(
   const KeyframeVector& keyframes,
   cv::Mat& match_matrix,
@@ -225,17 +201,6 @@ void buildSURFMatchMatrixTree(
         bins[matches[k].imgIdx].first++;
       }
     }
-
-    /*
-    // sort - highest counts first
-    std::sort(bins.begin(), bins.end(), std::greater<std::pair<int, int> >());
-
-    // output results
-    printf(" - best matches: ");
-    for (int b = 0; b < bins.size(); ++b)
-      printf("[%d(%d)] ", bins[b].second, bins[b].first);
-    printf("\n");  
-    */
     
     for (unsigned int b = 0; b < kf_size; ++b)
     {
@@ -247,7 +212,7 @@ void buildSURFMatchMatrixTree(
         match_matrix.at<float>(index_a, index_b) = corresp_count;
     }
   }
-}
+}  
   
 void buildDenseAssociationMatrix(
   const KeyframeVector& keyframes,
@@ -331,7 +296,7 @@ void buildDenseAssociationMatrix(
   } 
   printf("Done\n");
 }
-
+*/
 void floatMatrixToUintMatrix(
   const cv::Mat& mat_in, 
   cv::Mat& mat_out, 
@@ -376,7 +341,7 @@ void thresholdMatrix(
     float val_in = mat_in.at<float>(v, u) ;
     uint8_t& val_out = mat_out.at<uint8_t>(v, u); 
     
-    if (val_in > threshold) val_out = 1;
+    if (val_in >= threshold) val_out = 1;
   }
 }
 
@@ -919,5 +884,40 @@ void makeSymmetricOR(cv::Mat mat)
     }
   }
 }
+
+void trainSURFMatcher(
+  const KeyframeVector& keyframes,
+  cv::FlannBasedMatcher& matcher)
+{  
+  std::vector<cv::Mat> descriptors_vector;
+  
+  for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); ++kf_idx)
+  {
+    const RGBDKeyframe& keyframe = keyframes[kf_idx];
+    descriptors_vector.push_back(keyframe.descriptors);
+  }
+  matcher.add(descriptors_vector);
+
+  matcher.train();
+}
+
+/*
+// a = array
+// s = array size
+// n = number of items
+void shuffle(int * a, int s, n)
+{
+  int i = s - 1;
+  int j, temp;
+  
+  while (i > 0)
+  {
+    j = rand() % (i + 1);
+    temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+    i = i - 1;
+  }
+}*/
 
 } // namespace ccny_rgbd

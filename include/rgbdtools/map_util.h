@@ -59,16 +59,16 @@ void filterCloudByHeight(
 
 // *** matching
 
+/*
 void buildDenseAssociationMatrix(
   const KeyframeVector& keyframes,
   cv::Mat& association_matrix);
 
-/*
 void buildSURFAssociationMatrixBruteForce(
   const KeyframeVector& keyframes,
   cv::Mat& correspondence_matrix,
   int threshold);
-  */
+  
 
 void buildSURFAssociationMatrixTree(
   const KeyframeVector& keyframes,
@@ -92,14 +92,37 @@ void buildSURFMatchMatrixTree(
   cv::Mat& match_matrix,
   int k_nearest_neighbors);
 
-void trainSURFMatcher(
-  const KeyframeVector& keyframes,
-  cv::FlannBasedMatcher& matcher);
-
 void floatMatrixToUintMatrix(
   const cv::Mat& mat_in, 
   cv::Mat& mat_out, 
   float scale = 0);
+
+void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
+
+void pairwiseMatchingRANSAC(
+  const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+  double max_eucl_dist_sq, 
+  double max_desc_dist,
+  double sufficient_inlier_ratio,
+  int max_ransac_iterations,
+  std::vector<cv::DMatch>& all_matches,
+  std::vector<cv::DMatch>& best_inlier_matches,
+  Eigen::Matrix4f& best_transformation);
+*/
+
+void trainSURFMatcher(
+  const KeyframeVector& keyframes,
+  cv::FlannBasedMatcher& matcher);
+
+void getRandomIndices(
+  int k, int n, IntVector& output);
+
+void get3RandomIndices(
+  int n, std::set<int>& mask, IntVector& output);
+
+double distEuclideanSq(const PointFeature& a, const PointFeature& b);
+
+void makeSymmetricOR(cv::Mat mat);
 
 void thresholdMatrix(
   const cv::Mat& mat_in, 
@@ -113,27 +136,6 @@ void compareAssociationMatrix(
   int& false_neg,
   int& total);
 
-//void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
-
-void pairwiseMatchingRANSAC(
-  const RGBDFrame& frame_a, const RGBDFrame& frame_b,
-  double max_eucl_dist_sq, 
-  double max_desc_dist,
-  double sufficient_inlier_ratio,
-  int max_ransac_iterations,
-  std::vector<cv::DMatch>& all_matches,
-  std::vector<cv::DMatch>& best_inlier_matches,
-  Eigen::Matrix4f& best_transformation);
-
-void getRandomIndices(
-  int k, int n, IntVector& output);
-
-void get3RandomIndices(
-  int n, std::set<int>& mask, IntVector& output);
-
-double distEuclideanSq(const PointFeature& a, const PointFeature& b);
-
-void makeSymmetricOR(cv::Mat mat);
 
 } // namespace rgbdtools
 

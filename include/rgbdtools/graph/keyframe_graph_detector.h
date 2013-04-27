@@ -55,6 +55,12 @@ class KeyframeGraphDetector
       PAIRWISE_MATCHING_RANSAC,
     };
     
+    enum PairwiseMatcherIndex
+    {
+      PAIRWISE_MATCHER_LINEAR,
+      PAIRWISE_MATCHER_KDTREE,
+    };
+    
     /** @brief Constructor from ROS nodehandles
      * @param nh the public nodehandle
      * @param nh_private the private nodehandle
@@ -68,8 +74,10 @@ class KeyframeGraphDetector
     void setNCandidates(int n_candidates);
     void setKNearestNeighbors(int k_nearest_neighbors);
     void setNKeypoints(int n_keypoints);
+    void setSACResultsPath(const std::string& sac_results_path);
     void setCandidateGenerationMethod(CandidateGenerationMethod candidate_method);
     void setPairwiseMatchingMethod(PairwiseMatchingMethod pairwsie_matching_method);
+    void setPairwiseMatcherIndex(PairwiseMatcherIndex pairwsie_matcher_index);
     
     const cv::Mat getAssociationMatrix() const { return association_matrix_; }
     const cv::Mat getCandidateMatrix() const { return candidate_matrix_; }
@@ -92,6 +100,8 @@ class KeyframeGraphDetector
 
    private:
 
+    bool verbose_;
+     
     /** @brief Maximim iterations for the RANSAC test
      */
     int ransac_max_iterations_;
@@ -101,7 +111,7 @@ class KeyframeGraphDetector
      * If a candidate keyframe has fewer correspondences or more, 
      * it will not be eligible for a RANSAC test 
      */
-    int ransac_min_inliers_;
+    int sac_min_inliers_;
     
     bool matcher_use_desc_ratio_test_;
     
@@ -116,6 +126,8 @@ class KeyframeGraphDetector
      * two features to be considered a correspondence candidate
      */
     double sac_max_eucl_dist_sq_;
+    
+    bool sac_reestimate_tf_;
     
     double ransac_sufficient_inlier_ratio_;
     
@@ -147,8 +159,9 @@ class KeyframeGraphDetector
     /** @brief TREE of BRUTE_FORCE */
     CandidateGenerationMethod candidate_method_;
               
-    /** @brief TREE of BRUTE_FORCE */
     PairwiseMatchingMethod pairwise_matching_method_;
+    
+    PairwiseMatcherIndex pairwise_matcher_index_;
     
     //------------------------------------------
     
@@ -164,6 +177,8 @@ class KeyframeGraphDetector
     /** @brief CV_32FC1, for tree-based matching, contains number of total matches */
     cv::Mat match_matrix_;  
     
+    std::vector<cv::FlannBasedMatcher> matchers_;
+    
     // ------------
     
     void buildCandidateMatrix(const KeyframeVector& keyframes);
@@ -175,24 +190,31 @@ class KeyframeGraphDetector
     void buildCorrespondenceMatrix(const KeyframeVector& keyframes);
         
     int pairwiseMatching(
-      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      int kf_idx_a, int kf_idx_b,
+      const KeyframeVector& keyframes,
       DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
     
     int pairwiseMatchingBFSAC(
-      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      int kf_idx_a, int kf_idx_b,
+      const KeyframeVector& keyframes,
       DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
     
     int pairwiseMatchingRANSAC(
-      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      int kf_idx_a, int kf_idx_b,
+      const KeyframeVector& keyframes,
       DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
     
     void getCandidateMatches(
       const RGBDFrame& frame_a, const RGBDFrame& frame_b,
-      const cv::FlannBasedMatcher matcher,
+      cv::FlannBasedMatcher& matcher,
       DMatchVector& candidate_matches);
+
+    void prepareMatchers(
+      const KeyframeVector& keyframes);
+    
 };
 
 } // namespace rgbdtools
