@@ -127,7 +127,7 @@ void makeSymmetricOR(cv::Mat mat);
 void thresholdMatrix(
   const cv::Mat& mat_in, 
   cv::Mat& mat_out,
-  float threshold);
+  int threshold);
 
 void compareAssociationMatrix(
   const cv::Mat& a,

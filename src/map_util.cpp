@@ -331,14 +331,14 @@ void floatMatrixToUintMatrix(
 void thresholdMatrix(
   const cv::Mat& mat_in, 
   cv::Mat& mat_out,
-  float threshold)
+  int threshold)
 {
   mat_out = cv::Mat::zeros(mat_in.size(), CV_8UC1);
   
   for (int u = 0; u < mat_in.cols; ++u)
   for (int v = 0; v < mat_in.rows; ++v)   
   {
-    float val_in = mat_in.at<float>(v, u) ;
+    uint16_t val_in = mat_in.at<uint16_t>(v, u) ;
     uint8_t& val_out = mat_out.at<uint8_t>(v, u); 
     
     if (val_in >= threshold) val_out = 1;

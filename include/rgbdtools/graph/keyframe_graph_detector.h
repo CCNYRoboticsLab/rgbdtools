@@ -71,10 +71,12 @@ class KeyframeGraphDetector
      */
     virtual ~KeyframeGraphDetector();
 
+    void setVerbose(bool verbose);
     void setNCandidates(int n_candidates);
     void setKNearestNeighbors(int k_nearest_neighbors);
     void setNKeypoints(int n_keypoints);
     void setSACResultsPath(const std::string& sac_results_path);
+    void setSACSaveResults(bool sac_save_results);
     void setCandidateGenerationMethod(CandidateGenerationMethod candidate_method);
     void setPairwiseMatchingMethod(PairwiseMatchingMethod pairwsie_matching_method);
     void setPairwiseMatcherIndex(PairwiseMatcherIndex pairwsie_matcher_index);
@@ -171,10 +173,10 @@ class KeyframeGraphDetector
     /** @brief CV_8UC1, 1 if candidate, 0 otherwise */
     cv::Mat candidate_matrix_;
     
-    /** @brief CV_32FC1, for tree-based matching, contains number of inlier matches */
+    /** @brief CV_16UC1, for tree-based matching, contains number of inlier matches */
     cv::Mat correspondence_matrix_;
     
-    /** @brief CV_32FC1, for tree-based matching, contains number of total matches */
+    /** @brief CV_16UC1, for tree-based matching, contains number of total matches */
     cv::Mat match_matrix_;  
     
     std::vector<cv::FlannBasedMatcher> matchers_;

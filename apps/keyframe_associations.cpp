@@ -23,12 +23,13 @@ int main(int argc, char** argv)
   //buildAndSaveBFMatrix(keyframes, keyframe_path);
 
   // load bf matrix
-  cv::Mat bf_assoc = cv::imread(output_path + "/bf_assoc.png", -1);
-
+  cv::Mat bf_assoc = cv::imread(output_path + "/bf_assoc.png", -1);  
   cv::namedWindow("BF Associations", 0);
-  cv::Mat bf_assoc_vis = 255 * bf_assoc;
+  cv::Mat bf_assoc_vis; 
+  bf_assoc.convertTo(bf_assoc_vis, CV_8UC1);
+  bf_assoc_vis *= 255;
   cv::imshow("BF Associations", bf_assoc_vis);
-  cv::waitKey(10);
+  cv::waitKey(1000);
   
   // **** tree based
   
@@ -43,9 +44,8 @@ int main(int argc, char** argv)
   graph_detector.setPairwiseMatcherIndex(
     rgbdtools::KeyframeGraphDetector::PAIRWISE_MATCHER_KDTREE);
   
-  std::string sac_path = std::getenv("HOME");
-  sac_path = sac_path + "/graph/tree/";
-  graph_detector.setSACResultsPath(sac_path);
+  graph_detector.setSACResultsPath(output_path + "/sac_tree_images/");
+  graph_detector.setSACSaveResults(false);
   
   graph_detector.prepareFeaturesForRANSAC(keyframes);
 
@@ -109,6 +109,8 @@ void buildAndSaveBFMatrix(
 {
   rgbdtools::KeyframeGraphDetector graph_detector;
   
+  graph_detector.setVerbose(true);
+  
   graph_detector.setCandidateGenerationMethod(
     rgbdtools::KeyframeGraphDetector::CANDIDATE_GENERATION_BRUTE_FORCE);
 
@@ -118,9 +120,8 @@ void buildAndSaveBFMatrix(
   graph_detector.setPairwiseMatcherIndex(
     rgbdtools::KeyframeGraphDetector::PAIRWISE_MATCHER_LINEAR);
   
-  std::string sac_path = std::getenv("HOME");
-  sac_path = sac_path + "/graph/bf/";
-  graph_detector.setSACResultsPath(sac_path);
+  graph_detector.setSACResultsPath(output_path + "/sac_bf_images/");
+  graph_detector.setSACSaveResults(true);
   
   graph_detector.prepareFeaturesForRANSAC(keyframes);
   
@@ -132,7 +133,11 @@ void buildAndSaveBFMatrix(
   printf("BF:%.1f\n", dur_s);
   printf("--------------------------------------------------------------\n");
   
-  // save to file
-  std::string matrix_filename = output_path + "/bf_assoc.png";
-  cv::imwrite(matrix_filename, graph_detector.getAssociationMatrix());
+  // save corerspondence matrix to file
+  std::string corr_matrix_filename = output_path + "/bf_corr.png";
+  cv::imwrite(corr_matrix_filename, graph_detector.getCorrespondenceMatrix());
+
+  // save association matrix to file
+  std::string assoc_matrix_filename = output_path + "/bf_assoc.png";
+  cv::imwrite(assoc_matrix_filename, graph_detector.getAssociationMatrix());
 }
