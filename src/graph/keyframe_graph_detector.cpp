@@ -59,10 +59,11 @@ KeyframeGraphDetector::KeyframeGraphDetector()
   // output params
   verbose_ = false;     // console output
   sac_save_results_ = false;
-  sac_results_path_ = std::getenv("HOME");
   
   // derived parameters
   log_one_minus_ransac_confidence_ = log(1.0 - ransac_confidence_);
+  
+  setOutputPath(std::getenv("HOME"));
 }
 
 KeyframeGraphDetector::~KeyframeGraphDetector()
@@ -85,9 +86,10 @@ void KeyframeGraphDetector::setNKeypoints(int n_keypoints)
   n_keypoints_ = n_keypoints;
 }
 
-void KeyframeGraphDetector::setSACResultsPath(const std::string& sac_results_path)
+void KeyframeGraphDetector::setOutputPath(const std::string& output_path)
 {
-  sac_results_path_ = sac_results_path;
+  output_path_ = output_path;
+  boost::filesystem::create_directories(output_path_); 
 }
 
 void KeyframeGraphDetector::setSACSaveResults(bool sac_save_results)
@@ -180,7 +182,7 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
   for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); kf_idx++)
   { 
     RGBDKeyframe& keyframe = keyframes[kf_idx];
-
+   
     double surf_threshold = init_surf_threshold;
 
     while (surf_threshold >= min_surf_threshold)
@@ -205,7 +207,7 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
       cv::drawKeypoints(keyframe.rgb_img, keyframe.keypoints, kp_img);
       std::stringstream ss1;
       ss1 << "kp_" << kf_idx;
-      cv::imwrite(sac_results_path_ + "/" + ss1.str() + ".png", kp_img);
+      cv::imwrite(output_path_ + "/" + ss1.str() + ".png", kp_img);
     }
 
     extractor.compute(keyframe.rgb_img, keyframe.keypoints, keyframe.descriptors);
@@ -394,7 +396,7 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
 
             std::stringstream ss1;
             ss1 << kf_idx_a << "_to_" << kf_idx_b;
-            cv::imwrite(sac_results_path_ + "/" + ss1.str() + ".png", img_matches);
+            cv::imwrite(output_path_ + "/" + ss1.str() + ".png", img_matches);
           }
         }
         else

@@ -75,7 +75,7 @@ class KeyframeGraphDetector
     void setNCandidates(int n_candidates);
     void setKNearestNeighbors(int k_nearest_neighbors);
     void setNKeypoints(int n_keypoints);
-    void setSACResultsPath(const std::string& sac_results_path);
+    void setOutputPath(const std::string& output_path);
     void setSACSaveResults(bool sac_save_results);
     void setCandidateGenerationMethod(CandidateGenerationMethod candidate_method);
     void setPairwiseMatchingMethod(PairwiseMatchingMethod pairwsie_matching_method);
@@ -141,9 +141,9 @@ class KeyframeGraphDetector
      */
     bool sac_save_results_;
     
-    /** @brief The path where to save images if save_ransac_results_ is true
+    /** @brief The path where to save images if sac_save_results_ is true
      */
-    std::string sac_results_path_;
+    std::string output_path_;
     
     /** @brief For kd-tree based correspondences, how many candidate
      * keyframes will be tested agains the query keyframe using a RANSAC test
