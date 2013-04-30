@@ -98,7 +98,9 @@ class KeyframeGraphDetector
 
     void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
     
-    void buildAssociationMatrix(const KeyframeVector& keyframes);
+    void buildAssociationMatrix(
+      const KeyframeVector& keyframes,
+      KeyframeAssociationVector& associations);
 
    private:
 
@@ -189,7 +191,9 @@ class KeyframeGraphDetector
       
     void buildCandidateMatrixSurfTree();
           
-    void buildCorrespondenceMatrix(const KeyframeVector& keyframes);
+    void buildCorrespondenceMatrix(
+      const KeyframeVector& keyframes,
+      KeyframeAssociationVector& associations);
         
     int pairwiseMatching(
       int kf_idx_a, int kf_idx_b,

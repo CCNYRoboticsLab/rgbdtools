@@ -133,7 +133,7 @@ void KeyframeGraphDetector::generateKeyframeAssociations(
   KeyframeVector& keyframes,
   KeyframeAssociationVector& associations)
 {
-  buildAssociationMatrix(keyframes);  
+  buildAssociationMatrix(keyframes, associations);  
 }
 
 void KeyframeGraphDetector::prepareMatchers(
@@ -217,7 +217,8 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
 
 
 void KeyframeGraphDetector::buildAssociationMatrix(
-  const KeyframeVector& keyframes)
+  const KeyframeVector& keyframes,
+  KeyframeAssociationVector& associations)
 {
   prepareMatchers(keyframes);
   
@@ -225,10 +226,7 @@ void KeyframeGraphDetector::buildAssociationMatrix(
   buildCandidateMatrix(keyframes);
 
   // 2. Perfrom pairwise matching for all candidates
-  buildCorrespondenceMatrix(keyframes); 
-  
-  // 3. Threshold the correspondence matrix to find the associations
-  thresholdMatrix(correspondence_matrix_, association_matrix_, sac_min_inliers_);
+  buildCorrespondenceMatrix(keyframes, associations); 
 }
 
 void KeyframeGraphDetector::buildCandidateMatrix(
@@ -345,7 +343,8 @@ void KeyframeGraphDetector::buildCandidateMatrixSurfTree()
 }
 
 void KeyframeGraphDetector::buildCorrespondenceMatrix(
-  const KeyframeVector& keyframes)
+  const KeyframeVector& keyframes,
+  KeyframeAssociationVector& associations)
 {
   // check for square matrix
   assert(candidate_matrix_.rows == candidate_matrix_.cols);
@@ -353,6 +352,7 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
   
   // initialize correspondence matrix    
   correspondence_matrix_ = cv::Mat::zeros(size, size, CV_16UC1);
+  association_matrix_    = cv::Mat::zeros(size, size, CV_16UC1);
   
   for (int kf_idx_a = 0; kf_idx_a < size; ++kf_idx_a)
   for (int kf_idx_b = 0; kf_idx_b < size; ++kf_idx_b)
@@ -382,11 +382,27 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
         int iterations = pairwiseMatching(
           kf_idx_b, kf_idx_a, keyframes, inlier_matches, transformation);
         
+        correspondence_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = inlier_matches.size();
+        
         if (inlier_matches.size() >= sac_min_inliers_)
         {
-          if(verbose_) 
-            printf("pass [%d][%d]\n", iterations, (int)inlier_matches.size());
+          // mark the association matrix
+          association_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = 1;
           
+          // add an association
+          KeyframeAssociation association;
+          association.type = KeyframeAssociation::RANSAC;
+          association.kf_idx_a = kf_idx_a;
+          association.kf_idx_b = kf_idx_b;
+          association.matches  = inlier_matches;
+          association.a2b = transformation;
+          associations.push_back(association);
+          
+          // output the results to screen         
+          if(verbose_) 
+            printf("pass [%d][%d]\n", iterations, (int)inlier_matches.size());         
+          
+          // save the results to file
           if (sac_save_results_)
           {
             cv::Mat img_matches;
@@ -401,11 +417,11 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
         }
         else
         {
+          association_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = 0;
+          
           if(verbose_)
             printf("fail [%d][%d]\n", iterations, (int)inlier_matches.size());     
         }
-           
-        correspondence_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = inlier_matches.size();
       }
     }
   }

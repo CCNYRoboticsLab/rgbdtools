@@ -72,9 +72,11 @@ void bruteForceAssociations(
   graph_detector.setVerbose(true);
   graph_detector.setOutputPath(bf_output_path + "/sac_images/");
   graph_detector.setSACSaveResults(true);
-   
+  
+  rgbdtools::KeyframeAssociationVector associations;
+  
   const clock_t start = clock();
-  graph_detector.buildAssociationMatrix(keyframes);
+  graph_detector.buildAssociationMatrix(keyframes, associations);
   float dur_s = (clock() - start)/(float)CLOCKS_PER_SEC;
       
   printf("--------------------------------------------------------------\n");
@@ -114,8 +116,9 @@ void treeAssociations(
   graph_detector.setOutputPath(tree_output_path_kn + "/sac_images/");
   
   // build the associations
+  rgbdtools::KeyframeAssociationVector associations;
   const clock_t start = clock();
-  graph_detector.buildAssociationMatrix(keyframes);
+  graph_detector.buildAssociationMatrix(keyframes, associations);
   float dur_s = (clock() - start)/(float)CLOCKS_PER_SEC;
   
   // show & save matrices
