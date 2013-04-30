@@ -38,7 +38,7 @@ KeyframeGraphDetector::KeyframeGraphDetector()
   // tree algorithm params            
   candidate_method_ = CANDIDATE_GENERATION_SURF_TREE;
   n_candidates_ = 10;
-  k_nearest_neighbors_ = 2;
+  k_nearest_neighbors_ = 4;
   
   // matcher params
   pairwise_matcher_index_ = PAIRWISE_MATCHER_KDTREE;
@@ -504,9 +504,22 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
   // constants
   int min_sample_size = 3;
 
+  // params
+  float sac_max_reproj_dist_ = 5.0; // in pixels
+  float sac_max_reproj_dist_sq_ = pow(sac_max_reproj_dist_, 2.0);
+  
+  float max_z_dist_ = 0.30; // in meters
+  float max_z_dist_sq_ = pow(max_z_dist_, 2.0);
+  
   const RGBDFrame& frame_a = keyframes[kf_idx_a];
   const RGBDFrame& frame_b = keyframes[kf_idx_b];
   cv::FlannBasedMatcher& matcher = matchers_[kf_idx_a];
+  
+  // matrix
+  Matrix3f intr;  
+  for(int i = 0; i < 3; ++i)
+  for(int j = 0; j < 3; ++j)     
+    intr(j,i) = frame_a.intr.at<double>(j,i);
   
   // find candidate matches
   DMatchVector candidate_matches;
@@ -519,7 +532,7 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
 
   features_a.resize(candidate_matches.size());
   features_b.resize(candidate_matches.size());
-
+   
   for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
   {
     const cv::DMatch& match = candidate_matches[m_idx];
@@ -572,12 +585,36 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
 
     for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
     {
-      // euclidedan distance test
+      bool distance_test;
+            
       const PointFeature& p_a = features_a[m_idx];
       const PointFeature& p_b = features_b_tf[m_idx];
-      float eucl_dist_sq = distEuclideanSq(p_a, p_b);
       
-      if (eucl_dist_sq < sac_max_eucl_dist_sq_)
+      if(1) // euclidedan distance test
+      {
+        float eucl_dist_sq = distEuclideanSq(p_a, p_b);
+        distance_test = (eucl_dist_sq < sac_max_eucl_dist_sq_);
+      }
+      else // reprojection distance test
+      {
+        Vector3f P_a(p_a.x, p_a.y, p_a.z);
+        Vector3f P_b(p_b.x, p_b.y, p_b.z);
+        
+        Vector3f q_a = (intr * P_a) / p_a.z;
+        Vector3f q_b = (intr * P_b) / p_b.z;
+        
+        float du = q_a(0,0) - q_b(0,0);
+        float dv = q_a(1,0) - q_b(1,0);
+        float dz = p_a.z - p_b.z;
+        
+        float reproj_dist_sq = du*du + dv*dv;
+        float z_dist_sq =  dz*dz;
+        
+        distance_test = ((reproj_dist_sq < sac_max_reproj_dist_sq_) &&
+                         (z_dist_sq < max_z_dist_sq_));
+      }
+      
+      if (distance_test)
       {
         inlier_idx.push_back(m_idx);
         inlier_matches.push_back(candidate_matches[m_idx]);
@@ -622,10 +659,23 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
   // constants
   int min_sample_size = 3; 
 
+  // params
+  float sac_max_reproj_dist_ = 5.0; // in pixels
+  float sac_max_reproj_dist_sq_ = pow(sac_max_reproj_dist_, 2.0);
+  
+  float max_z_dist_ = 0.30; // in meters
+  float max_z_dist_sq_ = pow(max_z_dist_, 2.0);
+  
   // find candidate matches
   const RGBDFrame& frame_a = keyframes[kf_idx_a];
   const RGBDFrame& frame_b = keyframes[kf_idx_b];
   cv::FlannBasedMatcher& matcher = matchers_[kf_idx_a];
+  
+  // matrix
+  Matrix3f intr;  
+  for(int i = 0; i < 3; ++i)
+  for(int j = 0; j < 3; ++j)     
+    intr(j,i) = frame_a.intr.at<double>(j,i);
   
   DMatchVector candidate_matches;
   getCandidateMatches(frame_a, frame_b, matcher, candidate_matches);
@@ -697,12 +747,36 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
 
     for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
     {
-      // euclidedan distance test
+      bool distance_test;
+      
       const PointFeature& p_a = features_a[m_idx];
       const PointFeature& p_b = features_b_tf[m_idx];
-      float eucl_dist_sq = distEuclideanSq(p_a, p_b);
+
+      if(1) // euclidedan distance test
+      {
+        float eucl_dist_sq = distEuclideanSq(p_a, p_b);
+        distance_test = (eucl_dist_sq < sac_max_eucl_dist_sq_);
+      }
+      else // reprojection distance test
+      {
+        Vector3f P_a(p_a.x, p_a.y, p_a.z);
+        Vector3f P_b(p_b.x, p_b.y, p_b.z);
+        
+        Vector3f q_a = (intr * P_a) / p_a.z;
+        Vector3f q_b = (intr * P_b) / p_b.z;
+        
+        float du = q_a(0,0) - q_b(0,0);
+        float dv = q_a(1,0) - q_b(1,0);
+        float dz = p_a.z - p_b.z;
+        
+        float reproj_dist_sq = du*du + dv*dv;
+        float z_dist_sq =  dz*dz;
+        
+        distance_test = ((reproj_dist_sq < sac_max_reproj_dist_sq_) &&
+                         (z_dist_sq < max_z_dist_sq_));
+      }
       
-      if (eucl_dist_sq < sac_max_eucl_dist_sq_)
+      if (distance_test)
       {
         inlier_idx.push_back(m_idx);
         inlier_matches.push_back(candidate_matches[m_idx]);
