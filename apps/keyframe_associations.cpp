@@ -122,11 +122,13 @@ void treeAssociations(
   float dur_s = (clock() - start)/(float)CLOCKS_PER_SEC;
   
   // show & save matrices
-  cv::Mat tree_assoc = graph_detector.getAssociationMatrix(); 
   cv::Mat tree_cand  = graph_detector.getCandidateMatrix();
+  cv::Mat tree_corr  = graph_detector.getCorrespondenceMatrix();
+  cv::Mat tree_assoc = graph_detector.getAssociationMatrix();   
   
   // save BF matrices to file
-  cv::imwrite(tree_output_path_kn + "/tree_corr.png",  tree_cand);
+  cv::imwrite(tree_output_path_kn + "/tree_cand.png",  tree_cand);
+  cv::imwrite(tree_output_path_kn + "/tree_corr.png",  tree_corr);
   cv::imwrite(tree_output_path_kn + "/tree_assoc.png", tree_assoc);
   
   cv::imshow("Tree Associations", tree_assoc*255);

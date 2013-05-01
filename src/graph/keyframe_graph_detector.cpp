@@ -352,7 +352,7 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
   
   // initialize correspondence matrix    
   correspondence_matrix_ = cv::Mat::zeros(size, size, CV_16UC1);
-  association_matrix_    = cv::Mat::zeros(size, size, CV_16UC1);
+  association_matrix_    = cv::Mat::zeros(size, size, CV_8UC1);
   
   for (int kf_idx_a = 0; kf_idx_a < size; ++kf_idx_a)
   for (int kf_idx_b = 0; kf_idx_b < size; ++kf_idx_b)
@@ -387,7 +387,7 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
         if (inlier_matches.size() >= sac_min_inliers_)
         {
           // mark the association matrix
-          association_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = 1;
+          association_matrix_.at<uint8_t>(kf_idx_a, kf_idx_b) = 1;
           
           // add an association
           KeyframeAssociation association;
@@ -417,7 +417,7 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
         }
         else
         {
-          association_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = 0;
+          association_matrix_.at<uint8_t>(kf_idx_a, kf_idx_b) = 0;
           
           if(verbose_)
             printf("fail [%d][%d]\n", iterations, (int)inlier_matches.size());     
