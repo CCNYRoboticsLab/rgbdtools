@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     
   // **** brute force ***********************************************
        
-  //bruteForceAssociations(graph_detector, keyframes, bf_output_path);
+  bruteForceAssociations(graph_detector, keyframes, bf_output_path);
   
   // load BF matrix and show
   cv::Mat bf_assoc = cv::imread(bf_output_path + "/bf_assoc.png", -1);  

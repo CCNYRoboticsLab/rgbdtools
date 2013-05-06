@@ -353,47 +353,50 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
   // initialize correspondence matrix    
   correspondence_matrix_ = cv::Mat::zeros(size, size, CV_16UC1);
   association_matrix_    = cv::Mat::zeros(size, size, CV_8UC1);
-  
-  for (int kf_idx_a = 0; kf_idx_a < size; ++kf_idx_a)
-  for (int kf_idx_b = 0; kf_idx_b < size; ++kf_idx_b)
+
+  for (int kf_idx_q = 0; kf_idx_q < size; ++kf_idx_q)
+  for (int kf_idx_t = 0; kf_idx_t < size; ++kf_idx_t)
   {
-    const RGBDKeyframe& keyframe_a = keyframes[kf_idx_a];
-    const RGBDKeyframe& keyframe_b = keyframes[kf_idx_b];
-    
-    if (kf_idx_a == kf_idx_b)
+    const RGBDKeyframe& keyframe_q = keyframes[kf_idx_q];
+    const RGBDKeyframe& keyframe_t = keyframes[kf_idx_t];
+  
+    if (kf_idx_q == kf_idx_t)
     {
       // self-association
-      // @todo actually this should only account for the "valid" keypoints
-      correspondence_matrix_.at<uint16_t>(kf_idx_a, kf_idx_a) = keyframe_a.keypoints.size();
+      
+      //correspondence_matrix_.at<uint16_t>(kf_idx_q, kf_idx_q) = keyframe_q.keypoints.size();
+      correspondence_matrix_.at<uint16_t>(kf_idx_q, kf_idx_q) = keyframe_q.n_valid_keypoints;
+          
+      association_matrix_.at<uint8_t>(kf_idx_q, kf_idx_q) = 1;
     }
     else
     {
       // skip non-candidates
-      if (candidate_matrix_.at<uint8_t>(kf_idx_a, kf_idx_b) != 0)
+      if (candidate_matrix_.at<uint8_t>(kf_idx_q, kf_idx_t) != 0)
       {
-        if(verbose_) printf("[RANSAC %d to %d]: ", kf_idx_a, kf_idx_b);
+        if(verbose_) printf("[RANSAC %d to %d]: ", kf_idx_q, kf_idx_t);
 
         std::vector<cv::DMatch> inlier_matches;
 
         // perform ransac matching, b onto a
         Eigen::Matrix4f transformation;
 
-        // train, query
+        // query, train
         int iterations = pairwiseMatching(
-          kf_idx_b, kf_idx_a, keyframes, inlier_matches, transformation);
+          kf_idx_q, kf_idx_t, keyframes, inlier_matches, transformation);
         
-        correspondence_matrix_.at<uint16_t>(kf_idx_a, kf_idx_b) = inlier_matches.size();
+        correspondence_matrix_.at<uint16_t>(kf_idx_q, kf_idx_t) = inlier_matches.size();
         
         if (inlier_matches.size() >= sac_min_inliers_)
         {
           // mark the association matrix
-          association_matrix_.at<uint8_t>(kf_idx_a, kf_idx_b) = 1;
+          association_matrix_.at<uint8_t>(kf_idx_q, kf_idx_t) = 1;
           
           // add an association
           KeyframeAssociation association;
           association.type = KeyframeAssociation::RANSAC;
-          association.kf_idx_a = kf_idx_a;
-          association.kf_idx_b = kf_idx_b;
+          association.kf_idx_a = kf_idx_t;
+          association.kf_idx_b = kf_idx_q;
           association.matches  = inlier_matches;
           association.a2b = transformation;
           associations.push_back(association);
@@ -406,18 +409,18 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
           if (sac_save_results_)
           {
             cv::Mat img_matches;
-            cv::drawMatches(keyframe_a.rgb_img, keyframe_a.keypoints, 
-                            keyframe_b.rgb_img, keyframe_b.keypoints, 
+            cv::drawMatches(keyframe_q.rgb_img, keyframe_q.keypoints, 
+                            keyframe_t.rgb_img, keyframe_t.keypoints, 
                             inlier_matches, img_matches);
 
             std::stringstream ss1;
-            ss1 << kf_idx_a << "_to_" << kf_idx_b;
+            ss1 << kf_idx_q << "_to_" << kf_idx_t;
             cv::imwrite(output_path_ + "/" + ss1.str() + ".png", img_matches);
           }
         }
         else
         {
-          association_matrix_.at<uint8_t>(kf_idx_a, kf_idx_b) = 0;
+          association_matrix_.at<uint8_t>(kf_idx_q, kf_idx_t) = 0;
           
           if(verbose_)
             printf("fail [%d][%d]\n", iterations, (int)inlier_matches.size());     
@@ -429,7 +432,7 @@ void KeyframeGraphDetector::buildCorrespondenceMatrix(
 
 // frame_a = train, frame_b = query
 void KeyframeGraphDetector::getCandidateMatches(
-  const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+  const RGBDFrame& frame_q, const RGBDFrame& frame_t, 
   cv::FlannBasedMatcher& matcher,
   DMatchVector& candidate_matches)
 {
@@ -442,7 +445,7 @@ void KeyframeGraphDetector::getCandidateMatches(
     std::vector<DMatchVector> all_matches2;
     
     matcher.knnMatch(
-      frame_b.descriptors, all_matches2, 2);
+      frame_q.descriptors, all_matches2, 2);
 
     for (unsigned int m_idx = 0; m_idx < all_matches2.size(); ++m_idx)
     {
@@ -454,10 +457,10 @@ void KeyframeGraphDetector::getCandidateMatches(
       // remove bad matches - ratio test, valid keypoints
       if (ratio < matcher_max_desc_ratio_)
       {
-        int idx_b = match1.queryIdx;
-        int idx_a = match1.trainIdx; 
+        int idx_q = match1.queryIdx;
+        int idx_t = match1.trainIdx; 
 
-        if (frame_a.kp_valid[idx_a] && frame_b.kp_valid[idx_b])
+        if (frame_t.kp_valid[idx_t] && frame_q.kp_valid[idx_q])
           candidate_matches.push_back(match1);
       }
     }
@@ -466,9 +469,8 @@ void KeyframeGraphDetector::getCandidateMatches(
   {
     DMatchVector all_matches;
     
-    // query, train
     matcher.match(
-      frame_b.descriptors, all_matches);
+      frame_q.descriptors, all_matches);
 
     for (unsigned int m_idx = 0; m_idx < all_matches.size(); ++m_idx)
     {
@@ -477,10 +479,10 @@ void KeyframeGraphDetector::getCandidateMatches(
       // remove bad matches - descriptor distance, valid keypoints
       if (match.distance < matcher_max_desc_dist_)
       {      
-        int idx_b = match.queryIdx;
-        int idx_a = match.trainIdx; 
+        int idx_q = match.queryIdx;
+        int idx_t = match.trainIdx; 
         
-        if (frame_a.kp_valid[idx_a] && frame_b.kp_valid[idx_b])
+        if (frame_t.kp_valid[idx_t] && frame_q.kp_valid[idx_q])
           candidate_matches.push_back(match);
       }
     }
@@ -489,7 +491,7 @@ void KeyframeGraphDetector::getCandidateMatches(
   
 // frame_a = train, frame_b = query
 int KeyframeGraphDetector::pairwiseMatching(
-  int kf_idx_a, int kf_idx_b,
+  int kf_idx_q, int kf_idx_t,
   const KeyframeVector& keyframes,
   DMatchVector& best_inlier_matches,
   Eigen::Matrix4f& best_transformation)
@@ -499,12 +501,12 @@ int KeyframeGraphDetector::pairwiseMatching(
   if (pairwise_matching_method_ == PAIRWISE_MATCHING_RANSAC)
   {
     iterations = pairwiseMatchingRANSAC(
-      kf_idx_a, kf_idx_b, keyframes, best_inlier_matches, best_transformation);
+      kf_idx_q, kf_idx_t, keyframes, best_inlier_matches, best_transformation);
   }
   else if (pairwise_matching_method_ == PAIRWISE_MATCHING_BFSAC)
   {
     iterations = pairwiseMatchingBFSAC(
-      kf_idx_a, kf_idx_b, keyframes, best_inlier_matches, best_transformation);
+      kf_idx_q, kf_idx_t, keyframes, best_inlier_matches, best_transformation);
   }
   
   return iterations;
@@ -512,7 +514,7 @@ int KeyframeGraphDetector::pairwiseMatching(
   
 // frame_a = train, frame_b = query
 int KeyframeGraphDetector::pairwiseMatchingBFSAC(
-  int kf_idx_a, int kf_idx_b,
+  int kf_idx_q, int kf_idx_t,
   const KeyframeVector& keyframes,
   DMatchVector& best_inlier_matches,
   Eigen::Matrix4f& best_transformation)
@@ -520,37 +522,37 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
   // constants
   int min_sample_size = 3;
 
-  const RGBDFrame& frame_a = keyframes[kf_idx_a];
-  const RGBDFrame& frame_b = keyframes[kf_idx_b];
-  cv::FlannBasedMatcher& matcher = matchers_[kf_idx_a];
+  const RGBDFrame& frame_t = keyframes[kf_idx_t];
+  const RGBDFrame& frame_q = keyframes[kf_idx_q];
+  cv::FlannBasedMatcher& matcher = matchers_[kf_idx_t];
   
   // find candidate matches
   DMatchVector candidate_matches;
-  getCandidateMatches(frame_a, frame_b, matcher, candidate_matches);
+  getCandidateMatches(frame_q, frame_t, matcher, candidate_matches);
   if (candidate_matches.size() < min_sample_size) return 0;
   
   // **** build 3D features for SVD ********************************
 
-  PointCloudFeature features_a, features_b;
+  PointCloudFeature features_t, features_q;
 
-  features_a.resize(candidate_matches.size());
-  features_b.resize(candidate_matches.size());
+  features_t.resize(candidate_matches.size());
+  features_q.resize(candidate_matches.size());
 
   for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
   {
     const cv::DMatch& match = candidate_matches[m_idx];
-    int idx_b = match.queryIdx;
-    int idx_a = match.trainIdx; 
+    int idx_q = match.queryIdx;
+    int idx_t = match.trainIdx; 
 
-    PointFeature& p_a = features_a[m_idx];
-    p_a.x = frame_a.kp_means[idx_a](0,0);
-    p_a.y = frame_a.kp_means[idx_a](1,0);
-    p_a.z = frame_a.kp_means[idx_a](2,0);
+    PointFeature& p_t = features_t[m_idx];
+    p_t.x = frame_t.kp_means[idx_t](0,0);
+    p_t.y = frame_t.kp_means[idx_t](1,0);
+    p_t.z = frame_t.kp_means[idx_t](2,0);
 
-    PointFeature& p_b = features_b[m_idx];
-    p_b.x = frame_b.kp_means[idx_b](0,0);
-    p_b.y = frame_b.kp_means[idx_b](1,0);
-    p_b.z = frame_b.kp_means[idx_b](2,0);
+    PointFeature& p_q = features_q[m_idx];
+    p_q.x = frame_q.kp_means[idx_q](0,0);
+    p_q.y = frame_q.kp_means[idx_q](1,0);
+    p_q.z = frame_q.kp_means[idx_q](2,0);
   }
   
    // **** main BFSAC loop ****************************************
@@ -578,20 +580,20 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
     
     // estimate transformation from minimum set of random samples
     svd.estimateRigidTransformation(
-      features_b, inlier_idx,
-      features_a, inlier_idx,
+      features_q, inlier_idx,
+      features_t, inlier_idx,
       transformation);
     
     // evaluate transformation fitness by checking distance to all points
-    PointCloudFeature features_b_tf;
-    pcl::transformPointCloud(features_b, features_b_tf, transformation);
+    PointCloudFeature features_q_tf;
+    pcl::transformPointCloud(features_q, features_q_tf, transformation);
 
     for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
     {
       // euclidedan distance test
-      const PointFeature& p_a = features_a[m_idx];
-      const PointFeature& p_b = features_b_tf[m_idx];
-      float eucl_dist_sq = distEuclideanSq(p_a, p_b);
+      const PointFeature& p_t = features_t[m_idx];
+      const PointFeature& p_q = features_q_tf[m_idx];
+      float eucl_dist_sq = distEuclideanSq(p_t, p_q);
       
       if (eucl_dist_sq < sac_max_eucl_dist_sq_)
       {
@@ -602,10 +604,10 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
         if (sac_reestimate_tf_)
         {
           svd.estimateRigidTransformation(
-            features_b, inlier_idx,
-            features_a, inlier_idx,
+            features_q, inlier_idx,
+            features_t, inlier_idx,
             transformation);
-          pcl::transformPointCloud(features_b, features_b_tf, transformation);
+          pcl::transformPointCloud(features_q, features_q_tf, transformation);
         }
       }
     }
@@ -614,8 +616,8 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
     if (inlier_matches.size() > best_inlier_matches.size())
     {
       svd.estimateRigidTransformation(
-        features_b, inlier_idx,
-        features_a, inlier_idx,
+        features_q, inlier_idx,
+        features_t, inlier_idx,
         transformation);
 
       best_transformation = transformation;
@@ -630,7 +632,7 @@ int KeyframeGraphDetector::pairwiseMatchingBFSAC(
   
 // frame_a = train, frame_b = query
 int KeyframeGraphDetector::pairwiseMatchingRANSAC(
-  int kf_idx_a, int kf_idx_b,
+  int kf_idx_q, int kf_idx_t,
   const KeyframeVector& keyframes,
   DMatchVector& best_inlier_matches,
   Eigen::Matrix4f& best_transformation)
@@ -639,12 +641,12 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
   int min_sample_size = 3; 
 
   // find candidate matches
-  const RGBDFrame& frame_a = keyframes[kf_idx_a];
-  const RGBDFrame& frame_b = keyframes[kf_idx_b];
-  cv::FlannBasedMatcher& matcher = matchers_[kf_idx_a];
+  const RGBDFrame& frame_t = keyframes[kf_idx_t];
+  const RGBDFrame& frame_q = keyframes[kf_idx_q];
+  cv::FlannBasedMatcher& matcher = matchers_[kf_idx_t];
   
   DMatchVector candidate_matches;
-  getCandidateMatches(frame_a, frame_b, matcher, candidate_matches);
+  getCandidateMatches(frame_q, frame_t, matcher, candidate_matches);
   
   // check if enough matches are present
   if (candidate_matches.size() < min_sample_size)  return 0;
@@ -652,26 +654,26 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
   
   // **** build 3D features for SVD ********************************
 
-  PointCloudFeature features_a, features_b;
+  PointCloudFeature features_t, features_q;
 
-  features_a.resize(candidate_matches.size());
-  features_b.resize(candidate_matches.size());
+  features_t.resize(candidate_matches.size());
+  features_q.resize(candidate_matches.size());
 
   for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
   {
     const cv::DMatch& match = candidate_matches[m_idx];
-    int idx_b = match.queryIdx;
-    int idx_a = match.trainIdx; 
+    int idx_q = match.queryIdx;
+    int idx_t = match.trainIdx; 
 
-    PointFeature& p_a = features_a[m_idx];
-    p_a.x = frame_a.kp_means[idx_a](0,0);
-    p_a.y = frame_a.kp_means[idx_a](1,0);
-    p_a.z = frame_a.kp_means[idx_a](2,0);
+    PointFeature& p_t = features_t[m_idx];
+    p_t.x = frame_t.kp_means[idx_t](0,0);
+    p_t.y = frame_t.kp_means[idx_t](1,0);
+    p_t.z = frame_t.kp_means[idx_t](2,0);
 
-    PointFeature& p_b = features_b[m_idx];
-    p_b.x = frame_b.kp_means[idx_b](0,0);
-    p_b.y = frame_b.kp_means[idx_b](1,0);
-    p_b.z = frame_b.kp_means[idx_b](2,0);
+    PointFeature& p_q = features_q[m_idx];
+    p_q.x = frame_q.kp_means[idx_q](0,0);
+    p_q.y = frame_q.kp_means[idx_q](1,0);
+    p_q.z = frame_q.kp_means[idx_q](2,0);
   }
 
   // **** main RANSAC loop ****************************************
@@ -703,20 +705,20 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
     
     // estimate transformation from minimum set of random samples
     svd.estimateRigidTransformation(
-      features_b, inlier_idx,
-      features_a, inlier_idx,
+      features_q, inlier_idx,
+      features_t, inlier_idx,
       transformation);
 
     // evaluate transformation fitness by checking distance to all points
-    PointCloudFeature features_b_tf;
-    pcl::transformPointCloud(features_b, features_b_tf, transformation);
+    PointCloudFeature features_q_tf;
+    pcl::transformPointCloud(features_q, features_q_tf, transformation);
 
     for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
     {
       // euclidedan distance test
-      const PointFeature& p_a = features_a[m_idx];
-      const PointFeature& p_b = features_b_tf[m_idx];
-      float eucl_dist_sq = distEuclideanSq(p_a, p_b);
+      const PointFeature& p_t = features_t[m_idx];
+      const PointFeature& p_q = features_q_tf[m_idx];
+      float eucl_dist_sq = distEuclideanSq(p_t, p_q);
       
       if (eucl_dist_sq < sac_max_eucl_dist_sq_)
       {
@@ -727,10 +729,10 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
         if (sac_reestimate_tf_)
         {
           svd.estimateRigidTransformation(
-            features_b, inlier_idx,
-            features_a, inlier_idx,
+            features_q, inlier_idx,
+            features_t, inlier_idx,
             transformation);
-          pcl::transformPointCloud(features_b, features_b_tf, transformation);
+          pcl::transformPointCloud(features_q, features_q_tf, transformation);
         }
       }
     }
@@ -739,8 +741,8 @@ int KeyframeGraphDetector::pairwiseMatchingRANSAC(
     if (inlier_matches.size() > best_inlier_matches.size())
     {
       svd.estimateRigidTransformation(
-        features_b, inlier_idx,
-        features_a, inlier_idx,
+        features_q, inlier_idx,
+        features_t, inlier_idx,
         transformation);
 
       best_transformation = transformation;

@@ -196,25 +196,25 @@ class KeyframeGraphDetector
       KeyframeAssociationVector& associations);
         
     int pairwiseMatching(
-      int kf_idx_a, int kf_idx_b,
+      int kf_idx_q, int kf_idx_t,
       const KeyframeVector& keyframes,
       DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
     
     int pairwiseMatchingBFSAC(
-      int kf_idx_a, int kf_idx_b,
+      int kf_idx_q, int kf_idx_t,
       const KeyframeVector& keyframes,
       DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
     
     int pairwiseMatchingRANSAC(
-      int kf_idx_a, int kf_idx_b,
+      int kf_idx_q, int kf_idx_t,
       const KeyframeVector& keyframes,
       DMatchVector& best_inlier_matches,
       Eigen::Matrix4f& best_transformation);
     
     void getCandidateMatches(
-      const RGBDFrame& frame_a, const RGBDFrame& frame_b,
+      const RGBDFrame& frame_q, const RGBDFrame& frame_t,
       cv::FlannBasedMatcher& matcher,
       DMatchVector& candidate_matches);
 
