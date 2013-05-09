@@ -30,7 +30,7 @@ KeyframeGraphSolverG2O::KeyframeGraphSolverG2O():
   vertexIdx(0)
 {
   optimizer.setMethod(g2o::SparseOptimizer::LevenbergMarquardt);
-  optimizer.setVerbose(false);
+  optimizer.setVerbose(true);
   
   linearSolver = new g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>();
   solver_ptr = new g2o::BlockSolverX(&optimizer, linearSolver);
@@ -72,7 +72,8 @@ void KeyframeGraphSolverG2O::solve(
           
       AffineTransform tf = from_pose.inverse() * to_pose;
       
-      addEdge(from_idx, to_idx, tf, path_inf);
+      InformationMatrix inf = path_inf * 100.0;
+      addEdge(from_idx, to_idx, tf, inf);
     }
   }
   
@@ -96,7 +97,7 @@ void KeyframeGraphSolverG2O::solve(
     
     // calculate the information matrix
     int n_matches = association.matches.size();
-    InformationMatrix inf = ransac_inf * n_matches;
+    InformationMatrix inf = ransac_inf;
     
     // add the edge
     addEdge(from_idx, to_idx, association.a2b, inf);
@@ -132,8 +133,27 @@ void KeyframeGraphSolverG2O::solve(
     addVertex(keyframe.pose, kf_idx);   
   }
   
+    // add edges odometry edges 
+  printf("Adding VO edges...\n");
+  
+  InformationMatrix inf_identity = InformationMatrix::Identity();
+  
+  for (unsigned int kf_idx = 0; kf_idx < keyframes.size()-1; ++kf_idx)
+  {
+    int from_idx = kf_idx;
+    int to_idx   = kf_idx+1;
+        
+    const AffineTransform& from_pose = keyframes[from_idx].pose;
+    const AffineTransform& to_pose   = keyframes[to_idx].pose;
+        
+    AffineTransform tf = from_pose.inverse() * to_pose;
+    
+    InformationMatrix inf = inf_identity * 100.0;
+    addEdge(from_idx, to_idx, tf, inf);
+  }
+  
   // add edges
-  printf("Adding edges...\n");
+  printf("Adding RANSAC edges...\n");
   for (unsigned int as_idx = 0; as_idx < associations.size(); ++as_idx)
   {
     const KeyframeAssociation& association = associations[as_idx];
@@ -141,19 +161,7 @@ void KeyframeGraphSolverG2O::solve(
     int to_idx   = association.kf_idx_b;
     
     int matches = association.matches.size();
-    
-    Eigen::Matrix<double,6,6> inf = Eigen::Matrix<double,6,6>::Identity();
-    
-    if (matches == 0)
-    {
-      // this is an odometry edge 
-      inf = inf * 100.0;
-    }
-    else
-    {
-      // this is an SURF+RANSAC edge 
-      inf = inf * matches;
-    }
+    InformationMatrix inf = inf_identity * matches;
     
     addEdge(from_idx, to_idx, association.a2b, inf);
   }
@@ -256,7 +264,7 @@ void KeyframeGraphSolverG2O::optimizeGraph()
   optimizer.setUserLambdaInit(0.01);
 
   //Run optimization
-  optimizer.optimize(10);
+  optimizer.optimize(20);
 }
 
 void KeyframeGraphSolverG2O::getOptimizedPoses(AffineTransformVector& poses)

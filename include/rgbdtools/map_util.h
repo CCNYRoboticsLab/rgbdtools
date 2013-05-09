@@ -1,6 +1,7 @@
 #ifndef RGBDTOOLS_MAP_UTIL_H
 #define RGBDTOOLS_MAP_UTIL_H
 
+#include <set>
 #include <pcl/surface/mls.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
@@ -58,6 +59,7 @@ void filterCloudByHeight(
 
 // *** matching
 
+/*
 void buildDenseAssociationMatrix(
   const KeyframeVector& keyframes,
   cv::Mat& association_matrix);
@@ -66,6 +68,7 @@ void buildSURFAssociationMatrixBruteForce(
   const KeyframeVector& keyframes,
   cv::Mat& correspondence_matrix,
   int threshold);
+  
 
 void buildSURFAssociationMatrixTree(
   const KeyframeVector& keyframes,
@@ -89,26 +92,10 @@ void buildSURFMatchMatrixTree(
   cv::Mat& match_matrix,
   int k_nearest_neighbors);
 
-void trainSURFMatcher(
-  const KeyframeVector& keyframes,
-  cv::FlannBasedMatcher& matcher);
-
 void floatMatrixToUintMatrix(
   const cv::Mat& mat_in, 
   cv::Mat& mat_out, 
   float scale = 0);
-
-void thresholdMatrix(
-  const cv::Mat& mat_in, 
-  cv::Mat& mat_out,
-  float threshold);
-
-void compareAssociationMatrix(
-  const cv::Mat& a,
-  const cv::Mat& b,
-  int& false_pos,
-  int& false_neg,
-  int& total);
 
 void prepareFeaturesForRANSAC(KeyframeVector& keyframes);
 
@@ -121,11 +108,34 @@ void pairwiseMatchingRANSAC(
   std::vector<cv::DMatch>& all_matches,
   std::vector<cv::DMatch>& best_inlier_matches,
   Eigen::Matrix4f& best_transformation);
+*/
+
+void trainSURFMatcher(
+  const KeyframeVector& keyframes,
+  cv::FlannBasedMatcher& matcher);
 
 void getRandomIndices(
   int k, int n, IntVector& output);
 
+void get3RandomIndices(
+  int n, std::set<int>& mask, IntVector& output);
+
 double distEuclideanSq(const PointFeature& a, const PointFeature& b);
+
+void makeSymmetricOR(cv::Mat mat);
+
+void thresholdMatrix(
+  const cv::Mat& mat_in, 
+  cv::Mat& mat_out,
+  int threshold);
+
+void compareAssociationMatrix(
+  const cv::Mat& a,
+  const cv::Mat& b,
+  int& false_pos,
+  int& false_neg,
+  int& total);
+
 
 } // namespace rgbdtools
 
