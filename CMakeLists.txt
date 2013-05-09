@@ -78,7 +78,7 @@ target_link_libraries (rgbdtools
   ${PCL_LIBRARIES})
   
 ####################################################
- build global cloud align applications
+# build global cloud align applications
 
 add_executable(global_cloud_align
   apps/global_cloud_align.cpp)
