@@ -30,7 +30,8 @@ KeyframeGraphDetector::KeyframeGraphDetector()
   srand(time(NULL));
   
   // USRF params
-  n_keypoints_ = 500;
+  n_keypoints_ = 600;
+  init_surf_threshold_ = 400;
   
   // Pairwise matching params
   pairwise_matching_method_ = PAIRWISE_MATCHING_RANSAC;            
@@ -38,7 +39,7 @@ KeyframeGraphDetector::KeyframeGraphDetector()
   // tree algorithm params            
   candidate_method_ = CANDIDATE_GENERATION_SURF_TREE;
   n_candidates_ = 10;
-  k_nearest_neighbors_ = 2;
+  k_nearest_neighbors_ = 4;
   
   // matcher params
   pairwise_matcher_index_ = PAIRWISE_MATCHER_KDTREE;
@@ -69,6 +70,26 @@ KeyframeGraphDetector::KeyframeGraphDetector()
 KeyframeGraphDetector::~KeyframeGraphDetector()
 {
 
+}
+
+void KeyframeGraphDetector::setSACReestimateTf(bool sac_reestimate_tf)
+{
+  sac_reestimate_tf_ = sac_reestimate_tf;
+}
+
+void KeyframeGraphDetector::setMatcherUseDescRatioTest(bool matcher_use_desc_ratio_test)
+{
+  matcher_use_desc_ratio_test_ = matcher_use_desc_ratio_test; 
+}
+
+void KeyframeGraphDetector::setMatcherMaxDescRatio(double matcher_max_desc_ratio)
+{
+  matcher_max_desc_ratio_ = matcher_max_desc_ratio;
+}
+
+void KeyframeGraphDetector::setMatcherMaxDescDist(double matcher_max_desc_dist)
+{
+  matcher_max_desc_dist_ = matcher_max_desc_dist;
 }
 
 void KeyframeGraphDetector::setNCandidates(int n_candidates)
@@ -133,6 +154,8 @@ void KeyframeGraphDetector::generateKeyframeAssociations(
   KeyframeVector& keyframes,
   KeyframeAssociationVector& associations)
 {
+  prepareFeaturesForRANSAC(keyframes);
+  
   buildAssociationMatrix(keyframes, associations);  
 }
 
@@ -172,7 +195,7 @@ void KeyframeGraphDetector::prepareMatchers(
 void KeyframeGraphDetector::prepareFeaturesForRANSAC(
   KeyframeVector& keyframes)
 {
-  double init_surf_threshold = 800.0;
+  bool upright = true;
   double min_surf_threshold = 25;
 
   if(verbose_) printf("preparing SURF features for matching...\n");  
@@ -183,22 +206,34 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
   { 
     RGBDKeyframe& keyframe = keyframes[kf_idx];
    
-    double surf_threshold = init_surf_threshold;
+    double surf_threshold = init_surf_threshold_;
 
     while (surf_threshold >= min_surf_threshold)
     {
-      cv::SurfFeatureDetector detector(surf_threshold);
+      cv::SurfFeatureDetector detector(surf_threshold, 4, 2, true, upright);
       keyframe.keypoints.clear();
       detector.detect(keyframe.rgb_img, keyframe.keypoints);
-
-      if(verbose_)
-        printf("[KF %d of %d] %d SURF keypoints detected (threshold: %.1f)\n", 
-          (int)kf_idx, (int)keyframes.size(), 
-          (int)keyframe.keypoints.size(), surf_threshold); 
-
+    
       if ((int)keyframe.keypoints.size() < n_keypoints_)
+      {
+        if(verbose_)
+          printf("[KF %d of %d] %d SURF keypoints detected (threshold: %.1f)\n", 
+            (int)kf_idx, (int)keyframes.size(), 
+            (int)keyframe.keypoints.size(), surf_threshold); 
+        
         surf_threshold /= 2.0;
-      else break;
+      }
+      else
+      {
+        keyframe.keypoints.resize(n_keypoints_);
+        
+        if(verbose_)
+          printf("[KF %d of %d] %d SURF keypoints detected (threshold: %.1f)\n", 
+            (int)kf_idx, (int)keyframes.size(), 
+            (int)keyframe.keypoints.size(), surf_threshold); 
+        
+        break;
+      }
     }
 
     if (sac_save_results_)

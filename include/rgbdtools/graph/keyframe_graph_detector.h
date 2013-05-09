@@ -77,10 +77,15 @@ class KeyframeGraphDetector
     void setNKeypoints(int n_keypoints);
     void setOutputPath(const std::string& output_path);
     void setSACSaveResults(bool sac_save_results);
+    void setSACReestimateTf(bool sac_reestimate_tf);
     void setCandidateGenerationMethod(CandidateGenerationMethod candidate_method);
     void setPairwiseMatchingMethod(PairwiseMatchingMethod pairwsie_matching_method);
     void setPairwiseMatcherIndex(PairwiseMatcherIndex pairwsie_matcher_index);
     
+    void setMatcherUseDescRatioTest(bool matcher_use_desc_ratio_test);
+    void setMatcherMaxDescRatio(double matcher_max_desc_ratio);
+    void setMatcherMaxDescDist(double matcher_max_desc_dist);
+ 
     const cv::Mat getAssociationMatrix() const { return association_matrix_; }
     const cv::Mat getCandidateMatrix() const { return candidate_matrix_; }
     const cv::Mat getCorrespondenceMatrix() const { return correspondence_matrix_; }
@@ -159,6 +164,8 @@ class KeyframeGraphDetector
     /** @brief Number of desired keypoints to detect in each image
      */
     int n_keypoints_;
+    
+    double init_surf_threshold_;
     
     /** @brief TREE of BRUTE_FORCE */
     CandidateGenerationMethod candidate_method_;
