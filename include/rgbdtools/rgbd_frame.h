@@ -54,6 +54,8 @@ class RGBDFrame
      */
     RGBDFrame();
 
+    RGBDFrame(const RGBDFrame& other);
+
     /** @brief Constructor from ROS messages
      * @param rgb_img_in 8UC3 image message
      * @param depth_img_in 16UC1 ROS depth message (in mm, 0 = invalid data)

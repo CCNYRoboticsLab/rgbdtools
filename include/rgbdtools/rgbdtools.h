@@ -40,6 +40,7 @@
 
 #include "rgbdtools/registration/motion_estimation.h"
 #include "rgbdtools/registration/motion_estimation_icp_prob_model.h"
+#include "rgbdtools/registration/motion_estimation_pairwise_ransac.h"
 
 #include "rgbdtools/graph/keyframe_association.h"
 #include "rgbdtools/graph/keyframe_graph_detector.h"

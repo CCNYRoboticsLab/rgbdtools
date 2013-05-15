@@ -48,6 +48,8 @@ void OrbDetector::findFeatures(RGBDFrame& frame, const cv::Mat& input_img)
 {
   mutex_.lock();
   
+  frame.keypoints.clear();
+  
   cv::Mat mask(frame.depth_img.size(), CV_8UC1);
   frame.depth_img.convertTo(mask, CV_8U);
 
