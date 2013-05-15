@@ -31,6 +31,8 @@ OrbDetector::OrbDetector(): FeatureDetector(),
 {
   mutex_.lock();
   
+  compute_descriptors_ = true;
+  
   orb_detector_.reset(
     new cv::OrbFeatureDetector(n_features_, 1.2f, 8, threshold_, 0, 2, 0, 31));
   
