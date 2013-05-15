@@ -62,7 +62,9 @@ class MotionEstimation
      * @param frame The RGBD Frame for which the motion is estimated
      * @return incremental motion transform
      */    
-    AffineTransform getMotionEstimation(RGBDFrame& frame);
+    AffineTransform getMotionEstimation(
+      RGBDFrame& frame,
+      const AffineTransform& prediction = AffineTransform::Identity());
 
     /** @brief Set the transformation between the base and camera frames.
      * @param b2c The transform from the base frame to the camera frame,

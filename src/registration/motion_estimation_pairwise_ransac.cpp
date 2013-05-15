@@ -29,12 +29,12 @@ MotionEstimationPairwiseRANSAC::MotionEstimationPairwiseRANSAC():
   MotionEstimation(),
   initialized_(false)
 {
-  sac_min_inliers_ = 30;
+  sac_min_inliers_ = 40;
   sac_max_eucl_dist_sq_ = pow(0.03, 2.0);
   sac_reestimate_tf_ = false;
-  ransac_max_iterations_ = 500;
+  ransac_max_iterations_ = 100;
   ransac_confidence_ = 0.99;
-  matcher_use_desc_ratio_test_ = false;
+  matcher_use_desc_ratio_test_ = true;
   matcher_max_desc_ratio_ = 0.7;
   matcher_max_desc_dist_ = 1000.0;
     
@@ -59,8 +59,6 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
   bool result;
 
   detector_->findFeatures(frame);
-  printf("Features: %d\n", (int)frame.keypoints.size());
-  printf("Descriptors: %d\n", (int)frame.descriptors.rows);
 
   if ((int)frame.keypoints.size() == 0) return false;
 
@@ -249,6 +247,8 @@ int MotionEstimationPairwiseRANSAC::pairwiseMatchingRANSAC(
     
     iteration++;
   }
+  
+    printf("best_inlier_matches.size(): %d\n", (int)best_inlier_matches.size());
   
   return iteration;
 }

@@ -35,15 +35,12 @@ MotionEstimation::~MotionEstimation()
 
 }
 
-AffineTransform MotionEstimation::getMotionEstimation(RGBDFrame& frame)
+AffineTransform MotionEstimation::getMotionEstimation(
+  RGBDFrame& frame,
+  const AffineTransform& prediction)
 {
   ///@todo this should return a covariance
   
-  // motion prediction 
-  /// @todo motion prediction disabled for now
-  AffineTransform prediction;
-  prediction.setIdentity();
-
   AffineTransform motion;
   bool result;
 

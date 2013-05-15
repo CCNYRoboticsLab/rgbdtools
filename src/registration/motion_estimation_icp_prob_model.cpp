@@ -103,9 +103,9 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
   removeInvalidDistributions(
     frame.kp_means, frame.kp_covariances, frame.kp_valid,
     data_means, data_covariances);
-  
+   
   // transform distributions to world frame
-  transformDistributions(data_means, data_covariances, f2b_ * b2c_);
+  transformDistributions(data_means, data_covariances, prediction * f2b_* b2c_);
        
   // **** perform registration
 
@@ -118,16 +118,20 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
   }
   else
   {
+    AffineTransform motion_icp;
+    
     // align using icp 
-    result = alignICPEuclidean(data_means, motion);
-
+    result = alignICPEuclidean(data_means, motion_icp);
+    
+    motion = motion_icp * prediction;
+    
     if (!result) return false;
 
     constrainMotion(motion);
     f2b_ = motion * f2b_;
     
     // transform distributions to world frame
-    transformDistributions(data_means, data_covariances, motion);
+    transformDistributions(data_means, data_covariances, motion_icp);
 
     // update model: inserts new features and updates old ones with KF
     updateModelFromData(data_means, data_covariances);
