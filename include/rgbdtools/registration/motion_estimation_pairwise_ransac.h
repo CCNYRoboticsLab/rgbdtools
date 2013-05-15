@@ -1,5 +1,5 @@
 /**
- *  @file motion_estimation_icp_prob_model.h
+ *  @file motion_estimation_pairwise_ransac.h
  *  @author Ivan Dryanovski <ivan.dryanovski@gmail.com>
  * 
  *  @section LICENSE
@@ -72,7 +72,7 @@ class MotionEstimationPairwiseRANSAC: public MotionEstimation
 
     bool initialized_;
 
-    RGBDFrame * prev_frame_;
+    RGBDFrame prev_frame_;
 
     FeatureDetector * detector_;
        

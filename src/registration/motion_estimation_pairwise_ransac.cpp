@@ -1,5 +1,5 @@
 /**
- *  @file motion_estimation_icp_prob_model.cpp
+ *  @file motion_estimation_pairwise_ransac.cpp
  *  @author Ivan Dryanovski <ivan.dryanovski@gmail.com>
  * 
  *  @section LICENSE
@@ -42,6 +42,7 @@ MotionEstimationPairwiseRANSAC::MotionEstimationPairwiseRANSAC():
   log_one_minus_ransac_confidence_ = log(1.0 - ransac_confidence_);
   
   detector_ = new OrbDetector();
+  detector_->setComputeDescriptors(true);
   
   f2b_.setIdentity();
 }
@@ -64,7 +65,6 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
 
   if (!initialized_)
   {
-    printf("initialized\n");
     initialized_ = true;
     result = false;
   }
@@ -73,7 +73,7 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
     DMatchVector sac_matches;
     Eigen::Matrix4f sac_transformation;
     int ransac_iterations = pairwiseMatchingRANSAC(
-      frame, *prev_frame_, sac_matches, sac_transformation);
+      frame, prev_frame_, sac_matches, sac_transformation);
       
     printf("ransac_iterations: %d\n", ransac_iterations);
     if (sac_matches.size() > sac_min_inliers_)
@@ -91,11 +91,9 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
     }
     else
       result = false;
-      
-    delete prev_frame_;
   }
   
-  prev_frame_ = new RGBDFrame(frame);
+  prev_frame_ = RGBDFrame(frame);
 
   return result;
 }

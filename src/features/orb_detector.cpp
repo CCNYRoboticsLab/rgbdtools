@@ -31,8 +31,6 @@ OrbDetector::OrbDetector(): FeatureDetector(),
 {
   mutex_.lock();
   
-  compute_descriptors_ = true;
-  
   orb_detector_.reset(
     new cv::OrbFeatureDetector(n_features_, 1.2f, 8, threshold_, 0, 2, 0, 31));
   
@@ -47,9 +45,7 @@ OrbDetector::~OrbDetector()
 void OrbDetector::findFeatures(RGBDFrame& frame, const cv::Mat& input_img)
 {
   mutex_.lock();
-  
-  frame.keypoints.clear();
-  
+   
   cv::Mat mask(frame.depth_img.size(), CV_8UC1);
   frame.depth_img.convertTo(mask, CV_8U);
 

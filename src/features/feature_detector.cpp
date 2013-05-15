@@ -63,11 +63,21 @@ void FeatureDetector::findFeatures(RGBDFrame& frame)
     cv::GaussianBlur(*ptarget_img, *ptarget_img, cv::Size(blur_size, blur_size), 0);
   }
 
+  // clear previous data:
+  /// todo: maybe check type of keypoints (ORB/GFT etc), and if matches, don't clear it
+  frame.keypoints.clear();
+  frame.descriptors = cv::Mat();
+  
   // find the 2D coordinates of keypoints
   findFeatures(frame, *ptarget_img);
 
   // calculates the 3D position and covariance of features
   frame.computeDistributions(max_range_, max_stdev_);
+}
+
+void FeatureDetector::setComputeDescriptors(bool compute_descriptors)
+{
+  compute_descriptors_ = compute_descriptors;
 }
 
 void FeatureDetector::setSmooth(int smooth)
