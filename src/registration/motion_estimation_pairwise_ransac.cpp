@@ -29,27 +29,34 @@ MotionEstimationPairwiseRANSAC::MotionEstimationPairwiseRANSAC():
   MotionEstimation(),
   initialized_(false)
 {
-  sac_min_inliers_ = 40;
+  sac_min_inliers_ = 30;
   sac_max_eucl_dist_sq_ = pow(0.03, 2.0);
-  sac_reestimate_tf_ = false;
-  ransac_max_iterations_ = 100;
-  ransac_confidence_ = 0.99;
+  sac_reestimate_tf_ = true;
+  ransac_max_iterations_ = 200;
+  ransac_confidence_ = 0.999;
   matcher_use_desc_ratio_test_ = true;
-  matcher_max_desc_ratio_ = 0.7;
-  matcher_max_desc_dist_ = 1000.0;
+  matcher_max_desc_ratio_ = 0.6;
+  matcher_max_desc_dist_ = 50.0;
     
   // derived parameters
   log_one_minus_ransac_confidence_ = log(1.0 - ransac_confidence_);
   
-  detector_ = new OrbDetector();
+  detector_.reset(new OrbDetector());
   detector_->setComputeDescriptors(true);
+    
+  OrbDetectorPtr orb_detector = 
+    boost::static_pointer_cast<OrbDetector>(detector_);
+        
+  orb_detector->setThreshold(31.0);
+  orb_detector->setNFeatures(200);
+  orb_detector->setSmooth(0);
   
   f2b_.setIdentity();
 }
 
 MotionEstimationPairwiseRANSAC::~MotionEstimationPairwiseRANSAC()
 {
-  delete detector_;
+
 }
 
 bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
@@ -73,7 +80,7 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
     DMatchVector sac_matches;
     Eigen::Matrix4f sac_transformation;
     int ransac_iterations = pairwiseMatchingRANSAC(
-      frame, prev_frame_, sac_matches, sac_transformation);
+      frame, *prev_frame_, sac_matches, sac_transformation);
       
     printf("ransac_iterations: %d\n", ransac_iterations);
     if (sac_matches.size() > sac_min_inliers_)
@@ -87,13 +94,15 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
       // update the pose of the base frame
       f2b_ = f2c_new * b2c_.inverse();
    
+      delete prev_frame_;
+      
       result = true;
     }
     else
       result = false;
   }
   
-  prev_frame_ = RGBDFrame(frame);
+  prev_frame_ = new RGBDFrame(frame);
 
   return result;
 }
@@ -157,39 +166,50 @@ int MotionEstimationPairwiseRANSAC::pairwiseMatchingRANSAC(
   
   TransformationEstimationSVD svd;
   Eigen::Matrix4f transformation; // transformation used inside loop
-  best_inlier_matches.clear();
-  int iteration = 0;
-  
+  best_inlier_matches.clear(); 
   std::set<int> mask;
   
-  while(true)
-  //for (iteration = 0; iteration < ransac_max_iterations_; ++iteration)
+  int iteration = 0;  
+  for (iteration = 0; iteration < ransac_max_iterations_; ++iteration)
   {   
     // generate random indices
     IntVector sample_idx;
     get3RandomIndices(candidate_matches.size(), mask, sample_idx);
     
     // build initial inliers from random indices
-    IntVector inlier_idx;
-    std::vector<cv::DMatch> inlier_matches;
+    IntVector init_inlier_idx;
+    std::vector<cv::DMatch> init_inlier_matches;
 
     for (unsigned int s_idx = 0; s_idx < sample_idx.size(); ++s_idx)
     {
       int m_idx = sample_idx[s_idx];
-      inlier_idx.push_back(m_idx);
-      inlier_matches.push_back(candidate_matches[m_idx]);
+      init_inlier_idx.push_back(m_idx);
+      init_inlier_matches.push_back(candidate_matches[m_idx]);
     } 
     
     // estimate transformation from minimum set of random samples
     svd.estimateRigidTransformation(
-      features_q, inlier_idx,
-      features_t, inlier_idx,
+      features_q, init_inlier_idx,
+      features_t, init_inlier_idx,
       transformation);
 
+    // transformation rejection
+    
+    /*
+    double angular, linear;
+    AffineTransform temp(transformation);
+    getTfDifference(temp, linear, angular);
+    if (linear > 0.10 || angular > 5.0 * M_PI / 180.0)
+      continue;
+    */
+    
     // evaluate transformation fitness by checking distance to all points
     PointCloudFeature features_q_tf;
     pcl::transformPointCloud(features_q, features_q_tf, transformation);
 
+    IntVector inlier_idx;
+    std::vector<cv::DMatch> inlier_matches;
+    
     for (int m_idx = 0; m_idx < candidate_matches.size(); ++m_idx)
     {
       // euclidedan distance test
@@ -229,21 +249,14 @@ int MotionEstimationPairwiseRANSAC::pairwiseMatchingRANSAC(
     double best_inlier_ratio = (double) best_inlier_matches.size() / 
                                (double) candidate_matches.size();
     
-    // **** termination: iterations + inlier ratio
-    if(best_inlier_matches.size() < sac_min_inliers_)
+    // **** early termination: iterations + inlier ratio
+    if(best_inlier_matches.size() >= sac_min_inliers_)
     {
-      if (iteration >= ransac_max_iterations_) break;   
-    }                     
-    // **** termination: confidence ratio test
-    else
-    {     
       double h = log_one_minus_ransac_confidence_ / 
                 log(1.0 - pow(best_inlier_ratio, min_sample_size));
                 
       if (iteration > (int)(h+1)) break;
     }
-    
-    iteration++;
   }
   
     printf("best_inlier_matches.size(): %d\n", (int)best_inlier_matches.size());

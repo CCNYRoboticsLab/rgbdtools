@@ -28,7 +28,8 @@ namespace rgbdtools {
 FeatureDetector::FeatureDetector():
   compute_descriptors_(false),
   max_range_(7.0),
-  max_stdev_(0.15)
+  max_stdev_(0.15),
+  smooth_(0)
 {
 
 }

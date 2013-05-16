@@ -34,6 +34,9 @@ OrbDetector::OrbDetector(): FeatureDetector(),
   orb_detector_.reset(
     new cv::OrbFeatureDetector(n_features_, 1.2f, 8, threshold_, 0, 2, 0, 31));
   
+  gft_detector_.reset(
+    new cv::GoodFeaturesToTrackDetector(n_features_, 0.01, 0.0));
+  
   mutex_.unlock();
 }
 
@@ -49,7 +52,8 @@ void OrbDetector::findFeatures(RGBDFrame& frame, const cv::Mat& input_img)
   cv::Mat mask(frame.depth_img.size(), CV_8UC1);
   frame.depth_img.convertTo(mask, CV_8U);
 
-  orb_detector_->detect(input_img, frame.keypoints, mask);
+  gft_detector_->detect(input_img, frame.keypoints, mask);
+  //orb_detector_->detect(input_img, frame.keypoints, mask);
 
   if(compute_descriptors_)
     orb_descriptor_.compute(
