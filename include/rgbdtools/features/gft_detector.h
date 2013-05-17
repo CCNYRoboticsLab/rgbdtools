@@ -68,6 +68,8 @@ class GftDetector: public FeatureDetector
     double min_distance_; ///< the minimum distance (in pixels) between the features
 
     boost::shared_ptr<cv::GoodFeaturesToTrackDetector> gft_detector_; ///< OpenCV GTF detector object   
+    
+    cv::OrbDescriptorExtractor orb_descriptor_; ///< OpenCV feature detector object
 };
 
 typedef boost::shared_ptr<GftDetector> GftDetectorPtr;

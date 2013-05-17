@@ -43,6 +43,10 @@ void GftDetector::findFeatures(RGBDFrame& frame, const cv::Mat& input_img)
   frame.depth_img.convertTo(mask, CV_8U);
 
   gft_detector_->detect(input_img, frame.keypoints, mask);
+  
+  if(compute_descriptors_)
+    orb_descriptor_.compute(
+      input_img, frame.keypoints, frame.descriptors);
 }
 
 void GftDetector::setNFeatures(int n_features)
