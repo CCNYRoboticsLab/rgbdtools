@@ -67,7 +67,9 @@ class MotionEstimationPairwiseRANSAC: public MotionEstimation
       RGBDFrame& frame,
       const AffineTransform& prediction,
       AffineTransform& motion);
-          
+
+    void setFeatureDetector(FeatureDetectorPtr detector) {detector_ = detector;}
+    
   private:
 
     bool initialized_;

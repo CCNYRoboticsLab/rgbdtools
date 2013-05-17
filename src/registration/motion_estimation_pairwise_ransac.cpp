@@ -41,15 +41,15 @@ MotionEstimationPairwiseRANSAC::MotionEstimationPairwiseRANSAC():
   // derived parameters
   log_one_minus_ransac_confidence_ = log(1.0 - ransac_confidence_);
   
-  detector_.reset(new OrbDetector());
-  detector_->setComputeDescriptors(true);
+  //detector_.reset(new OrbDetector());
+  //detector_->setComputeDescriptors(true);
     
-  OrbDetectorPtr orb_detector = 
-    boost::static_pointer_cast<OrbDetector>(detector_);
+  //OrbDetectorPtr orb_detector = 
+  //  boost::static_pointer_cast<OrbDetector>(detector_);
         
-  orb_detector->setThreshold(31.0);
-  orb_detector->setNFeatures(200);
-  orb_detector->setSmooth(0);
+  //orb_detector->setThreshold(31.0);
+  //orb_detector->setNFeatures(200);
+  //orb_detector->setSmooth(0);
   
   f2b_.setIdentity();
 }

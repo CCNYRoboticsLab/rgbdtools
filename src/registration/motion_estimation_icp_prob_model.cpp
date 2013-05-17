@@ -123,10 +123,14 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
     // align using icp 
     result = alignICPEuclidean(data_means, motion_icp);
     
+    if (!result) 
+    {
+      motion_icp.setIdentity();
+      std::cerr << "ICP alignment failed. Using identity transform." << std::endl;
+    }
+    
     motion = motion_icp * prediction;
     
-    if (!result) return false;
-
     constrainMotion(motion);
     f2b_ = motion * f2b_;
     
@@ -171,10 +175,8 @@ bool MotionEstimationICPProbModel::alignICPEuclidean(
     if ((int)data_indices.size() <  min_correspondences_)
     {
       std::cerr << "[ICP] Not enough correspondences ("
-                << (int)data_indices.size() 
-                << " of "
-                << min_correspondences_ 
-                << " minimum). Leacing ICP loop"
+                << (int)data_indices.size() << " of "
+                << min_correspondences_  << " minimum). Leaving ICP loop"
                 << std::endl;
       return false;
     }
