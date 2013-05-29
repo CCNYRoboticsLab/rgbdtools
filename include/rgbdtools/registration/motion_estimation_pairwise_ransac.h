@@ -74,7 +74,7 @@ class MotionEstimationPairwiseRANSAC: public MotionEstimation
 
     bool initialized_;
 
-    RGBDFrame * prev_frame_;
+    RGBDFrame prev_frame_;
 
     FeatureDetectorPtr detector_;
        

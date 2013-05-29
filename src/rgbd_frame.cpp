@@ -34,8 +34,8 @@ RGBDFrame::RGBDFrame(const RGBDFrame& other)
 {
   index = other.index;
 
-  rgb_img = other.rgb_img;
-  depth_img = other.depth_img;
+  rgb_img = other.rgb_img.clone();
+  depth_img = other.depth_img.clone();
 
   header = other.header; 
   intr = other.intr;

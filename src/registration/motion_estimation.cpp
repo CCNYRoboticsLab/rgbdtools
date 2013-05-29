@@ -56,8 +56,6 @@ AffineTransform MotionEstimation::getMotionEstimation(
 
   if (!result)
   {
-    std::cerr << "Could not estimate motion from RGBD data, using Identity transform." 
-              << std::endl;
     motion.setIdentity();
   }
 

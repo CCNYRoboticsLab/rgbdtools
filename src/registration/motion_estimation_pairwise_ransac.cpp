@@ -31,27 +31,19 @@ MotionEstimationPairwiseRANSAC::MotionEstimationPairwiseRANSAC():
 {
   sac_min_inliers_ = 30;
   sac_max_eucl_dist_sq_ = pow(0.03, 2.0);
-  sac_reestimate_tf_ = true;
+  sac_reestimate_tf_ = false;
   ransac_max_iterations_ = 200;
   ransac_confidence_ = 0.999;
   matcher_use_desc_ratio_test_ = true;
-  matcher_max_desc_ratio_ = 0.6;
+  matcher_max_desc_ratio_ = 0.8;
   matcher_max_desc_dist_ = 50.0;
     
   // derived parameters
   log_one_minus_ransac_confidence_ = log(1.0 - ransac_confidence_);
-  
-  //detector_.reset(new OrbDetector());
-  //detector_->setComputeDescriptors(true);
-    
-  //OrbDetectorPtr orb_detector = 
-  //  boost::static_pointer_cast<OrbDetector>(detector_);
-        
-  //orb_detector->setThreshold(31.0);
-  //orb_detector->setNFeatures(200);
-  //orb_detector->setSmooth(0);
-  
+   
   f2b_.setIdentity();
+
+  //cv::namedWindow("sacmatches", 0);
 }
 
 MotionEstimationPairwiseRANSAC::~MotionEstimationPairwiseRANSAC()
@@ -66,10 +58,6 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
 {  
   bool result;
 
-  detector_->findFeatures(frame);
-
-  if ((int)frame.keypoints.size() == 0) return false;
-
   if (!initialized_)
   {
     initialized_ = true;
@@ -80,9 +68,9 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
     DMatchVector sac_matches;
     Eigen::Matrix4f sac_transformation;
     int ransac_iterations = pairwiseMatchingRANSAC(
-      frame, *prev_frame_, sac_matches, sac_transformation);
-      
-    printf("ransac_iterations: %d\n", ransac_iterations);
+      frame, prev_frame_, sac_matches, sac_transformation);
+         
+    //printf("ransac_iterations: %d\n", ransac_iterations);
     if (sac_matches.size() > sac_min_inliers_)
     {
       // express the motion in the fixed frame
@@ -94,20 +82,40 @@ bool MotionEstimationPairwiseRANSAC::getMotionEstimationImpl(
       // update the pose of the base frame
       f2b_ = f2c_new * b2c_.inverse();
    
-      delete prev_frame_;
+      //delete prev_frame_;
       
       result = true;
+      
+      /*
+      // visualize
+      cv::Mat img_matches;
+      cv::drawMatches(frame.rgb_img, frame.keypoints, 
+        prev_frame_.rgb_img, prev_frame_.keypoints, 
+        sac_matches, img_matches);
+      cv::imshow("sacmatches", img_matches);
+      cv::waitKey(1);*/
     }
     else
+    {
+      /*
+      // visualize
+      cv::Mat img_matches;
+      cv::drawMatches(frame.rgb_img, frame.keypoints, 
+        prev_frame_.rgb_img, prev_frame_.keypoints, 
+        DMatchVector(), img_matches);
+      cv::imshow("sacmatches", img_matches);
+      cv::waitKey(1);*/
+     
+      std::cerr << "RANSAC alignment failed. Using identity transform." << std::endl;
       result = false;
+    }
   }
   
-  prev_frame_ = new RGBDFrame(frame);
+  prev_frame_ = RGBDFrame(frame);
 
   return result;
 }
        
-// frame_a = train, frame_b = query
 int MotionEstimationPairwiseRANSAC::pairwiseMatchingRANSAC(
   const RGBDFrame& frame_q, const RGBDFrame& frame_t,
   DMatchVector& best_inlier_matches,
@@ -132,7 +140,7 @@ int MotionEstimationPairwiseRANSAC::pairwiseMatchingRANSAC(
   DMatchVector candidate_matches;
   getCandidateMatches(frame_q, frame_t, matcher, candidate_matches);
   
-  printf("candidate_matches.size(): %d\n", (int)candidate_matches.size());
+  //printf("candidate_matches.size(): %d\n", (int)candidate_matches.size());
   
   // check if enough matches are present
   if (candidate_matches.size() < min_sample_size)  return 0;
@@ -259,7 +267,7 @@ int MotionEstimationPairwiseRANSAC::pairwiseMatchingRANSAC(
     }
   }
   
-    printf("best_inlier_matches.size(): %d\n", (int)best_inlier_matches.size());
+  //printf("best_inlier_matches.size(): %d\n", (int)best_inlier_matches.size());
   
   return iteration;
 }
