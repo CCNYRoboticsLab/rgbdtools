@@ -346,11 +346,12 @@ void KeyframeGraphDetector::buildCandidateMatrixSurfTree()
 {
   // check for square matrix
   assert(match_matrix_.rows == match_matrix_.cols);
+  int size = match_matrix_.rows;
+  assert(size > 0);
   
   // check for validity of n_candidates argument
-  int size = match_matrix_.rows;
-  assert(n_candidates_ <= size);
-  
+  if(n_candidates_ < size) n_candidates_ = size;
+
   // initialize candidate matrix as all 0
   candidate_matrix_ = cv::Mat::eye(match_matrix_.size(), CV_8UC1);
   
