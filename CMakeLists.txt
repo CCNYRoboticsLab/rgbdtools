@@ -1,23 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(rgbdtools)
-
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_BUILD_TYPE Release)
-
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+####################################################
+# Dependencies:
 find_package(PkgConfig)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 
-# Boost:
+# Dependencies - Boost:
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# G2O:
+# Dependencies - G2O:
 # Use script to find g2o. If it's not installed, set G2O_INCLUDE_DIRS manually 
 # using -DG2O_INCLUDE_DIRS.
 find_package(G2O REQUIRED)
@@ -27,17 +27,17 @@ set(G2O_LIBRARIES g2o_core
                   g2o_solver_csparse
                   g2o_csparse_extension)
 
-# OpenCV:
+# Dependencies - OpenCV:
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
-# PCL:
+# Dependencies - PCL:
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-# Suitesparse:
+# Dependencies - Suitesparse:
 FIND_PACKAGE(SuiteSparse REQUIRED)
 include_directories(${SUITESPARSE_INCLUDE_DIRS})
 
