@@ -138,8 +138,9 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
 
   // update model metadata
   model_ptr_->width = model_ptr_->points.size();
-  model_ptr_->header.stamp.sec  = frame.header.stamp.sec;
-  model_ptr_->header.stamp.nsec = frame.header.stamp.nsec;
+  // FIXME(idryanov) Reolve why this doesn't compile.
+  //model_ptr_->header.stamp.sec  = frame.header.stamp.sec;
+  //model_ptr_->header.stamp.nsec = frame.header.stamp.nsec;
   
   return result;
 }

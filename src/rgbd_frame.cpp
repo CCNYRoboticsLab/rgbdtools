@@ -271,8 +271,10 @@ void RGBDFrame::constructFeaturePointCloud(
   //set the header
   cloud.header.frame_id   = header.frame_id;
   cloud.header.seq        = header.seq;
-  cloud.header.stamp.sec  = header.stamp.sec;
-  cloud.header.stamp.nsec = header.stamp.nsec;
+
+  // FIXME(idryanov) Reolve why this doesn't compile.
+  //cloud.header.stamp.sec  = header.stamp.sec;
+  //cloud.header.stamp.nsec = header.stamp.nsec;
 }
 
 void RGBDFrame::constructDensePointCloud(
@@ -343,8 +345,9 @@ void RGBDFrame::constructDensePointCloud(
 
   // set cloud header
   cloud.header.frame_id   = header.frame_id;
-  cloud.header.stamp.sec  = header.stamp.sec;
-  cloud.header.stamp.nsec = header.stamp.nsec;
+  // FIXME(idryanov) Reolve why this doesn't compile.
+  //cloud.header.stamp.sec  = header.stamp.sec;
+  //cloud.header.stamp.nsec = header.stamp.nsec;
   cloud.header.seq        = header.seq;
     
   cloud.height = rgb_img.rows;

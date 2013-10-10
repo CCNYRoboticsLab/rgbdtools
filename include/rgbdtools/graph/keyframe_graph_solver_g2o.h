@@ -24,10 +24,10 @@
 #ifndef RGBDTOOLS_KEYFRAME_GRAPH_SOLVER_G2O_H
 #define RGBDTOOLS_KEYFRAME_GRAPH_SOLVER_G2O_H
 
-#include <g2o/core/graph_optimizer_sparse.h>
-#include <g2o/core/block_solver.h>
-#include <g2o/solvers/cholmod/linear_solver_cholmod.h>
-#include <g2o/types/slam3d/types_six_dof_quat.h>
+#include "g2o/core/sparse_optimizer.h"
+#include "g2o/core/block_solver.h"
+#include "g2o/core/optimization_algorithm_levenberg.h"
+
 
 #include "rgbdtools/graph/keyframe_graph_solver.h"
 
@@ -62,10 +62,12 @@ class KeyframeGraphSolverG2O: public KeyframeGraphSolver
     
   private:
 
+    g2o::BlockSolverX::LinearSolverType* linear_solver_;
+    g2o::BlockSolverX* block_solver_;
+    g2o::OptimizationAlgorithmLevenberg* optimization_algorithm_;
+    g2o::SparseOptimizer optimizer_;
+
     int vertexIdx;
-    g2o::SparseOptimizer optimizer;
-    g2o::BlockSolverX::LinearSolverType * linearSolver;
-    g2o::BlockSolverX * solver_ptr;
         
     /** @brief Adds a vertex to the g2o structure
      */

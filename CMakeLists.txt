@@ -11,47 +11,35 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 find_package(PkgConfig)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
+
+# Boost
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# G2O:
+# Use script to find g2o. If it's not installed, set G2O_INCLUDE_DIRS manually 
+# using -DG2O_INCLUDE_DIRS
+find_package(G2O REQUIRED)
+include_directories(${G2O_INCLUDE_DIR})
+set(G2O_LIBRARIES g2o_core
+                  g2o_types_slam3d
+                  g2o_solver_csparse
+                  g2o_csparse_extension)
 
 # OpenCV
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
-link_libraries(${OpenCV_LIBRARIES})
 
 # PCL
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
-link_libraries(${PCL_LIBRARIES})   
 
-# Boost
-find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-link_libraries(${Boost_LIBRARIES})    
-
-#message("Boost: ${Boost_LIBRARIES}")
-#message("OpenCV: ${OpenCV_LIBRARIES}")
-
-# g2o:
-#   use script to find g2o
-#   if not installed, set G2O_INCLUDE_DIRS manually using -DG2O_INCLUDE_DIRS
-
-find_package(G2O)
-include_directories(${G2O_INCLUDE_DIRS})
-link_directories(${G2O_LIBRARY_DIRS})
-link_libraries(${G2O_LIBRARIES})    
-
-#message("G2O inc. dirs: ${G2O_INCLUDE_DIRS}")
-#message("G2O lib. dirs: ${G2O_LIBRARY_DIRS}")
-#message("G2O libs: ${G2O_LIBRARIES}")
-
-#suitesparse
-FIND_PACKAGE(SuiteSparse)
+# Suitesparse
+FIND_PACKAGE(SuiteSparse REQUIRED)
 include_directories(${SUITESPARSE_INCLUDE_DIRS})
-
-#message("SUITESPARSE_INCLUDE_DIRS: ${SUITESPARSE_INCLUDE_DIRS}")
 
 ####################################################
 # build rgbdtools library
@@ -75,36 +63,24 @@ add_library (rgbdtools SHARED
 target_link_libraries (rgbdtools
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES})
+  ${PCL_LIBRARIES}
+  ${SUITESPARSE_LIBRARIES}
+  ${G2O_LIBRARIES})
   
+install(TARGETS rgbdtools DESTINATION lib)
+install(DIRECTORY include/rgbdtools DESTINATION include)
+
 ####################################################
 # build global cloud align applications
 
-add_executable(global_cloud_align
-  apps/global_cloud_align.cpp)
-  
-target_link_libraries (global_cloud_align 
-  rgbdtools
-  ${Boost_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES}) 
-
+add_executable(global_cloud_align apps/global_cloud_align.cpp)
+target_link_libraries (global_cloud_align rgbdtools) 
 install(TARGETS global_cloud_align DESTINATION bin)
 
 ####################################################
 # build keyframe associations applications
 
-add_executable(keyframe_associations
-  apps/keyframe_associations.cpp)
-  
-target_link_libraries (keyframe_associations 
-  rgbdtools
-  ${Boost_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${PCL_LIBRARIES})
-  
+add_executable(keyframe_associations apps/keyframe_associations.cpp)
+target_link_libraries (keyframe_associations rgbdtools)
 install(TARGETS keyframe_associations DESTINATION bin)
-
-install(TARGETS rgbdtools DESTINATION lib)
-install(DIRECTORY include/rgbdtools DESTINATION include)
 
