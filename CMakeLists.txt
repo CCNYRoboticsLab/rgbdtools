@@ -13,13 +13,13 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 find_package(PkgConfig)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules/")
 
-# Boost
+# Boost:
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # G2O:
 # Use script to find g2o. If it's not installed, set G2O_INCLUDE_DIRS manually 
-# using -DG2O_INCLUDE_DIRS
+# using -DG2O_INCLUDE_DIRS.
 find_package(G2O REQUIRED)
 include_directories(${G2O_INCLUDE_DIR})
 set(G2O_LIBRARIES g2o_core
@@ -27,22 +27,22 @@ set(G2O_LIBRARIES g2o_core
                   g2o_solver_csparse
                   g2o_csparse_extension)
 
-# OpenCV
+# OpenCV:
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
-# PCL
+# PCL:
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-# Suitesparse
+# Suitesparse:
 FIND_PACKAGE(SuiteSparse REQUIRED)
 include_directories(${SUITESPARSE_INCLUDE_DIRS})
 
 ####################################################
-# build rgbdtools library
+# Build rgbdtools library.
 
 add_library (rgbdtools SHARED
   src/rgbd_frame.cpp
@@ -71,14 +71,14 @@ install(TARGETS rgbdtools DESTINATION lib)
 install(DIRECTORY include/rgbdtools DESTINATION include)
 
 ####################################################
-# build global cloud align applications
+# Build global cloud align applications.
 
 add_executable(global_cloud_align apps/global_cloud_align.cpp)
 target_link_libraries (global_cloud_align rgbdtools) 
 install(TARGETS global_cloud_align DESTINATION bin)
 
 ####################################################
-# build keyframe associations applications
+# Build keyframe associations applications.
 
 add_executable(keyframe_associations apps/keyframe_associations.cpp)
 target_link_libraries (keyframe_associations rgbdtools)
