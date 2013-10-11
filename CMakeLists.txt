@@ -17,16 +17,6 @@ find_package(PkgConfig)
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# Dependencies - G2O:
-# Use script to find g2o. If it's not installed, set G2O_INCLUDE_DIRS manually 
-# using -DG2O_INCLUDE_DIRS.
-find_package(G2O REQUIRED)
-include_directories(${G2O_INCLUDE_DIR})
-set(G2O_LIBRARIES g2o_core
-                  g2o_types_slam3d
-                  g2o_solver_csparse
-                  g2o_csparse_extension)
-
 # Dependencies - OpenCV:
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -40,6 +30,12 @@ link_directories(${PCL_LIBRARY_DIRS})
 # Dependencies - Suitesparse:
 FIND_PACKAGE(SuiteSparse REQUIRED)
 include_directories(${SUITESPARSE_INCLUDE_DIRS})
+
+# Dependencies - G2O:
+# Use script to find g2o. If it's not installed, set G2O_INCLUDE_DIRS manually 
+# using -DG2O_INCLUDE_DIRS.
+find_package(G2O REQUIRED)
+include_directories(${G2O_INCLUDE_DIR})
 
 ####################################################
 # Build rgbdtools library.
