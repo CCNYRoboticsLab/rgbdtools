@@ -13,7 +13,7 @@ Overview
 
 The stack contains tools for visual odometry and mapping using RGB-D cameras. 
 
-For ROS applications built using this library, see [ccny_rgbd_tools](https://gihub.com/ccny-ros-pkg/ccny_rgbd_tools.git).
+For ROS applications built using this library, see [ccny_rgbd_tools](https://github.com/ccny-ros-pkg/ccny_rgbd_tools.git).
 
 This code is at an experimental stage, and licensed under the GPLv3 license.
 
@@ -21,7 +21,7 @@ Installing
 -----------------------------------
 
 If you are using this library as part of ROS, then refer to the 
-[ccny_rgbd_tools](https://gihub.com/ccny-ros-pkg/ccny_rgbd_tools.git) 
+[ccny_rgbd_tools](https://github.com/ccny-ros-pkg/ccny_rgbd_tools.git) 
 installation instructions. You do not need to install anything manually.
 
 If you would like to build this library stand-alone, then follow these
