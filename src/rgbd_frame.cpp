@@ -344,11 +344,10 @@ void RGBDFrame::constructDensePointCloud(
   }
 
   // set cloud header
-  cloud.header.frame_id   = header.frame_id;
-  // FIXME(idryanov) Reolve why this doesn't compile.
-  //cloud.header.stamp.sec  = header.stamp.sec;
-  //cloud.header.stamp.nsec = header.stamp.nsec;
-  cloud.header.seq        = header.seq;
+  cloud.header.frame_id = header.frame_id;
+  // The point cloud stamp, in usec.
+  cloud.header.stamp = header.stamp.sec * 1e6 + header.stamp.nsec * 1e-3;
+  cloud.header.seq = header.seq;
     
   cloud.height = rgb_img.rows;
   cloud.width  = rgb_img.cols;
