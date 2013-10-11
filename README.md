@@ -37,12 +37,9 @@ Download the stack from our repository:
 
 Install the required dependencies:
 
- * [g2o](http://openslam.org/g2o.html)
+ * [g2o](https://github.com/RainerKuemmerle/g2o)
  
-If you have `libg2o` installed using the ROS package manager, you might need to remove it:
-    
-    sudo apt-get remove ros-fuerte-libg2o
-    sudo apt-get remove ros-groovy-libg2o
+If you are using ROS, you use the `libg2o` deb package.
 
 Next, configure and build:
 
