@@ -146,8 +146,10 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
 
   // update model metadata
   model_ptr_->width = model_ptr_->points.size();
-  model_ptr_->header.stamp.sec  = frame.header.stamp.sec;
-  model_ptr_->header.stamp.nsec = frame.header.stamp.nsec;
+
+  // Stamp of the point cloud, in usec.
+  model_ptr_->header.stamp = frame.header.stamp.sec * 1e6 +
+      frame.header.stamp.nsec * 1e-3;
   
   return result;
 }

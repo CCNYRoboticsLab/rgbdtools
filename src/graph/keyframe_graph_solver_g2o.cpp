@@ -23,24 +23,39 @@
 
 #include "rgbdtools/graph/keyframe_graph_solver_g2o.h"
 
+#include "g2o/core/factory.h"
+#include "g2o/solvers/csparse/linear_solver_csparse.h"
+#include "g2o/types/slam3d/types_slam3d.h"
+
+G2O_USE_TYPE_GROUP(slam3d);
+
 namespace rgbdtools {
 
 KeyframeGraphSolverG2O::KeyframeGraphSolverG2O():
   KeyframeGraphSolver(),
   vertexIdx(0)
 {
-  optimizer.setMethod(g2o::SparseOptimizer::LevenbergMarquardt);
-  optimizer.setVerbose(true);
-  
-  linearSolver = new g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>();
-  solver_ptr = new g2o::BlockSolverX(&optimizer, linearSolver);
-  
-  optimizer.setSolver(solver_ptr);
+  // Create the linear solver.
+  linear_solver_ = 
+      new g2o::LinearSolverCSparse<g2o::BlockSolverX::PoseMatrixType>();
+
+  // Create the block solver on top of the linear solver.
+  block_solver_ = new g2o::BlockSolverX(linear_solver_);
+
+  // Create the algorithm to carry out the optimization.
+  optimization_algorithm_ = new 
+      g2o::OptimizationAlgorithmLevenberg(block_solver_);
+
+  // create the optimizer to load the data and carry out the optimization
+  optimizer_.setVerbose(true);
+  optimizer_.setAlgorithm(optimization_algorithm_);
 }
 
 KeyframeGraphSolverG2O::~KeyframeGraphSolverG2O()
 {
-
+  delete linear_solver_;
+  delete block_solver_;
+  delete optimization_algorithm_;
 }
 
 void KeyframeGraphSolverG2O::solve(
@@ -208,7 +223,7 @@ void KeyframeGraphSolverG2O::addVertex(
   
   // set up node
   g2o::VertexSE3 *vc = new g2o::VertexSE3();
-  vc->estimate() = pose;
+  vc->setEstimate(pose);
   vc->setId(vertex_idx);      
 
   // set first pose fixed
@@ -216,7 +231,7 @@ void KeyframeGraphSolverG2O::addVertex(
     vc->setFixed(true);
 
   // add to optimizer
-  optimizer.addVertex(vc);
+  optimizer_.addVertex(vc);
 }
 
 void KeyframeGraphSolverG2O::addEdge(
@@ -245,26 +260,27 @@ void KeyframeGraphSolverG2O::addEdge(
   // TODO: smart pointers
   
   g2o::EdgeSE3* edge = new g2o::EdgeSE3;
-  edge->vertices()[0] = optimizer.vertex(from_idx);
-  edge->vertices()[1] = optimizer.vertex(to_idx);
+  edge->vertices()[0] = optimizer_.vertex(from_idx);
+  edge->vertices()[1] = optimizer_.vertex(to_idx);
   edge->setMeasurement(transf);
 
   //Set the information matrix
   edge->setInformation(information_matrix);
 
-  optimizer.addEdge(edge);
+  optimizer_.addEdge(edge);
 }
 
 void KeyframeGraphSolverG2O::optimizeGraph()
 {
   //Prepare and run the optimization
-  optimizer.initializeOptimization();
+  optimizer_.initializeOptimization();
 
   //Set the initial Levenberg-Marquardt lambda
-  optimizer.setUserLambdaInit(0.01);
+  // FIXME(idryanov): This does not compile
+  //optimizer_.setUserLambdaInit(0.01);
 
   //Run optimization
-  optimizer.optimize(20);
+  optimizer_.optimize(20);
 }
 
 void KeyframeGraphSolverG2O::getOptimizedPoses(AffineTransformVector& poses)
@@ -272,7 +288,8 @@ void KeyframeGraphSolverG2O::getOptimizedPoses(AffineTransformVector& poses)
   for (unsigned int idx = 0; idx < poses.size(); ++idx)
   {   
     //Transform the vertex pose from G2O quaternion to Eigen::Matrix4f
-    g2o::VertexSE3* vertex = dynamic_cast<g2o::VertexSE3*>(optimizer.vertex(idx));
+    g2o::VertexSE3* vertex = dynamic_cast<g2o::VertexSE3*>(
+        optimizer_.vertex(idx));
     double optimized_pose_quat[7];
     vertex->getEstimateData(optimized_pose_quat);
 
