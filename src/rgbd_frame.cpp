@@ -272,9 +272,8 @@ void RGBDFrame::constructFeaturePointCloud(
   cloud.header.frame_id   = header.frame_id;
   cloud.header.seq        = header.seq;
 
-  // FIXME(idryanov) Reolve why this doesn't compile.
-  //cloud.header.stamp.sec  = header.stamp.sec;
-  //cloud.header.stamp.nsec = header.stamp.nsec;
+  // The point cloud stamp, in usec.
+  cloud.header.stamp = header.stamp.sec * 1e6 + header.stamp.nsec * 1e-3;
 }
 
 void RGBDFrame::constructDensePointCloud(
