@@ -51,6 +51,7 @@ add_library (rgbdtools SHARED
   src/features/gft_detector.cpp
   src/features/star_detector.cpp
   src/registration/motion_estimation.cpp
+  src/registration/motion_estimation_klt.cpp
   src/registration/motion_estimation_icp_prob_model.cpp
   src/graph/keyframe_graph_detector.cpp
   src/graph/keyframe_graph_solver.cpp
