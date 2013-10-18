@@ -69,6 +69,9 @@ class MotionEstimationKLT: public MotionEstimation
     
   private:
 
+    std::vector<cv::Point2f> prev_pts_;
+    bool first_time_;
+    cv::Mat prev_rgb_img_;
  };
 
 } // namespace rgbdtools

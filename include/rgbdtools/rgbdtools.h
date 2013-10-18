@@ -39,6 +39,7 @@
 #include "rgbdtools/features/surf_detector.h"
 
 #include "rgbdtools/registration/motion_estimation.h"
+#include "rgbdtools/registration/motion_estimation_klt.h"
 #include "rgbdtools/registration/motion_estimation_icp_prob_model.h"
 
 #include "rgbdtools/graph/keyframe_association.h"

@@ -28,7 +28,7 @@ namespace rgbdtools {
 MotionEstimationKLT::MotionEstimationKLT():
   MotionEstimation()
 {
-
+  first_time_ = true;
 }
 
 MotionEstimationKLT::~MotionEstimationKLT()
@@ -41,6 +41,54 @@ bool MotionEstimationKLT::getMotionEstimationImpl(
   const AffineTransform& prediction,
   AffineTransform& motion)
 {
+  if (first_time_) {
+    first_time_ = false;
+
+    for (size_t i = 0; i < frame.keypoints.size(); ++i) {
+      prev_pts_.push_back(frame.keypoints[i].pt);
+    }
+    printf("prev_points initialized to %lu\n", prev_pts_.size());
+  } else {
+    std::vector<unsigned char> status;
+    std::vector<float> errors;
+    std::vector<cv::Point2f> next_pts;
+
+    printf("PyrLK on %lu points...\n", prev_pts_.size());
+    cv::calcOpticalFlowPyrLK(prev_rgb_img_, 
+                             frame.rgb_img, 
+                             prev_pts_, 
+                             next_pts, 
+                             status,
+                             errors);
+    printf("prev_pts_: %lu, next_pts: %lu\n", prev_pts_.size(), 
+        next_pts.size());  
+
+    // The tracked features:
+    std::vector<cv::Point2f> tracked_pts;
+    std::vector<cv::KeyPoint> tracked_kpts;
+
+    int c = 0;
+    for (size_t i = 0; i < prev_pts_.size(); ++i) {
+      //if (status[i] != 0) {
+        tracked_pts.push_back(next_pts[c]);
+        cv::KeyPoint kpt;
+        kpt.pt = next_pts[c];
+        tracked_kpts.push_back(kpt);
+        ++c;
+      //}
+    }
+    printf("tracked_pts: %lu\n", tracked_pts.size());  
+
+    // Show the keypoint image.
+    cv::Mat kpt_img = frame.rgb_img.clone();
+    cv::drawKeypoints(frame.rgb_img, tracked_kpts, kpt_img, 255);
+    cv::imshow("tracked", kpt_img);
+    cv::waitKey(1); 
+
+    prev_pts_ = tracked_pts;
+  }
+
+  prev_rgb_img_ = frame.rgb_img.clone();
 
   return false;
 }
