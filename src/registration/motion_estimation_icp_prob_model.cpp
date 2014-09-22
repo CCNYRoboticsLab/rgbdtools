@@ -103,9 +103,9 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
   removeInvalidDistributions(
     frame.kp_means, frame.kp_covariances, frame.kp_valid,
     data_means, data_covariances);
-  
+   
   // transform distributions to world frame
-  transformDistributions(data_means, data_covariances, f2b_ * b2c_);
+  transformDistributions(data_means, data_covariances, prediction * f2b_* b2c_);
        
   // **** perform registration
 
@@ -118,16 +118,24 @@ bool MotionEstimationICPProbModel::getMotionEstimationImpl(
   }
   else
   {
+    AffineTransform motion_icp;
+    
     // align using icp 
-    result = alignICPEuclidean(data_means, motion);
-
-    if (!result) return false;
-
+    result = alignICPEuclidean(data_means, motion_icp);
+    
+    if (!result) 
+    {
+      motion_icp.setIdentity();
+      std::cerr << "ICP alignment failed. Using identity transform." << std::endl;
+    }
+    
+    motion = motion_icp * prediction;
+    
     constrainMotion(motion);
     f2b_ = motion * f2b_;
     
     // transform distributions to world frame
-    transformDistributions(data_means, data_covariances, motion);
+    transformDistributions(data_means, data_covariances, motion_icp);
 
     // update model: inserts new features and updates old ones with KF
     updateModelFromData(data_means, data_covariances);
@@ -169,10 +177,8 @@ bool MotionEstimationICPProbModel::alignICPEuclidean(
     if ((int)data_indices.size() <  min_correspondences_)
     {
       std::cerr << "[ICP] Not enough correspondences ("
-                << (int)data_indices.size() 
-                << " of "
-                << min_correspondences_ 
-                << " minimum). Leacing ICP loop"
+                << (int)data_indices.size() << " of "
+                << min_correspondences_  << " minimum). Leaving ICP loop"
                 << std::endl;
       return false;
     }

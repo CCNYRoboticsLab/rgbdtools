@@ -30,6 +30,25 @@ RGBDFrame::RGBDFrame()
 
 }
 
+RGBDFrame::RGBDFrame(const RGBDFrame& other)
+{
+  index = other.index;
+
+  rgb_img = other.rgb_img.clone();
+  depth_img = other.depth_img.clone();
+
+  header = other.header; 
+  intr = other.intr;
+
+  keypoints = other.keypoints;
+  descriptors = other.descriptors.clone();
+ 
+  kp_valid = other.kp_valid;         
+  kp_means = other.kp_means;         
+  kp_covariances = other.kp_covariances;   
+  n_valid_keypoints = other.n_valid_keypoints;           
+}
+
 RGBDFrame::RGBDFrame(
   const cv::Mat& rgb_img_in,
   const cv::Mat& depth_img_in,

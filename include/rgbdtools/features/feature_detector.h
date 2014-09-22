@@ -94,6 +94,8 @@ class FeatureDetector
      */ 
     void setMaxStDev(double max_stdev);
        
+    void setComputeDescriptors(bool compute_descriptors);
+    
   protected:
 
     boost::mutex mutex_;         ///< state mutex

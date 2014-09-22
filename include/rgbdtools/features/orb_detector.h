@@ -66,7 +66,7 @@ class OrbDetector: public FeatureDetector
 
     int n_features_;        ///< number of desired features
     double threshold_;      ///< threshold for detection
-    
+       
     cv::OrbDescriptorExtractor orb_descriptor_; ///< OpenCV feature detector object
     boost::shared_ptr<cv::OrbFeatureDetector> orb_detector_; ///< OpenCV descriptor extractor object
 };

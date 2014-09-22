@@ -52,6 +52,7 @@ add_library (rgbdtools SHARED
   src/features/star_detector.cpp
   src/registration/motion_estimation.cpp
   src/registration/motion_estimation_icp_prob_model.cpp
+  src/registration/motion_estimation_pairwise_ransac.cpp
   src/graph/keyframe_graph_detector.cpp
   src/graph/keyframe_graph_solver.cpp
   src/graph/keyframe_graph_solver_g2o.cpp)
