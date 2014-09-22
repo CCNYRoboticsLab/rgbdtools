@@ -210,35 +210,11 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
     keyframe.keypoints.clear();
     detector.detect(keyframe.rgb_img, keyframe.keypoints);
 
-/*
-    while (orb_threshold >= min_orb_threshold)
+    if(verbose_)
     {
-      cv::OrbFeatureDetector detector(n_features_, 1.2f, 8, threshold, 0, 2, 0, 31);
-      keyframe.keypoints.clear();
-      detector.detect(keyframe.rgb_img, keyframe.keypoints);
-    
-      if ((int)keyframe.keypoints.size() < n_keypoints_)
-      {
-        if(verbose_)
-          printf("[KF %d of %d] %d SURF keypoints detected (threshold: %.1f)\n", 
-            (int)kf_idx, (int)keyframes.size(), 
-            (int)keyframe.keypoints.size(), surf_threshold); 
-        
-        surf_threshold /= 2.0;
-      }
-      else
-      {
-        keyframe.keypoints.resize(n_keypoints_);
-        
-        if(verbose_)
-          printf("[KF %d of %d] %d SURF keypoints detected (threshold: %.1f)\n", 
-            (int)kf_idx, (int)keyframes.size(), 
-            (int)keyframe.keypoints.size(), surf_threshold); 
-        
-        break;
-      }
+      printf("[KF %d of %d] %d ORB keypoints detected\n", 
+        (int)kf_idx, (int)keyframes.size(), (int)keyframe.keypoints.size()); 
     }
-*/
 
     if (sac_save_results_)
     {
