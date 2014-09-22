@@ -47,7 +47,6 @@ add_library (rgbdtools SHARED
   src/map_util.cpp
   src/features/feature_detector.cpp
   src/features/orb_detector.cpp
-  src/features/surf_detector.cpp
   src/features/gft_detector.cpp
   src/features/star_detector.cpp
   src/registration/motion_estimation.cpp

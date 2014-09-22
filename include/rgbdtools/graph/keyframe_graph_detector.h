@@ -27,7 +27,7 @@
 #include <boost/thread/mutex.hpp>
 #include <set>
 #include <pcl/registration/transformation_estimation_svd.h>
-#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include "rgbdtools/types.h"
 #include "rgbdtools/rgbd_keyframe.h"
