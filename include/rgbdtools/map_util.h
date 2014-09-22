@@ -7,7 +7,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
 
-#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include "rgbdtools/types.h"
 #include "rgbdtools/rgbd_keyframe.h"

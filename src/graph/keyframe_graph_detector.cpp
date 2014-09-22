@@ -196,21 +196,24 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
   KeyframeVector& keyframes)
 {
   bool upright = true;
-  double min_surf_threshold = 25;
+  double orb_threshold = 31;
 
   if(verbose_) printf("preparing SURF features for matching...\n");  
 
-  cv::SurfDescriptorExtractor extractor;
+  cv::OrbDescriptorExtractor extractor;
  
   for (unsigned int kf_idx = 0; kf_idx < keyframes.size(); kf_idx++)
   { 
     RGBDKeyframe& keyframe = keyframes[kf_idx];
-   
-    double surf_threshold = init_surf_threshold_;
+  
+    cv::OrbFeatureDetector detector(400, 1.2f, 8, orb_threshold, 0, 2, 0, 31);
+    keyframe.keypoints.clear();
+    detector.detect(keyframe.rgb_img, keyframe.keypoints);
 
-    while (surf_threshold >= min_surf_threshold)
+/*
+    while (orb_threshold >= min_orb_threshold)
     {
-      cv::SurfFeatureDetector detector(surf_threshold, 4, 2, true, upright);
+      cv::OrbFeatureDetector detector(n_features_, 1.2f, 8, threshold, 0, 2, 0, 31);
       keyframe.keypoints.clear();
       detector.detect(keyframe.rgb_img, keyframe.keypoints);
     
@@ -235,6 +238,7 @@ void KeyframeGraphDetector::prepareFeaturesForRANSAC(
         break;
       }
     }
+*/
 
     if (sac_save_results_)
     {
